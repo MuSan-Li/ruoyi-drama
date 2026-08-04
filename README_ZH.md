@@ -51,16 +51,29 @@ VITE_CLIENT_ID=后台配置的客户端ID
 打开前端 → 使用后台账号登录（默认管理员账号 `admin` / `admin123`）→ 在「创作中心」首页写下故事灵感 → 点击「开始创作」进入短剧工作台，依次完成剧本打磨、资产配置、分镜确认与视频合成。
 
 ### 4. 一键配置 Atlas Key（重要）
-短剧的图片 / 视频生成都依赖 [Atlas Cloud](https://www.atlascloud.ai/)。使用前需要配置 API Key：
+短剧的图片 / 视频生成都依赖 [Atlas Cloud](https://www.atlascloud.ai/zh?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama)。使用前需要配置 API Key：
 
 1. 在「创作中心」首页右上角点击 **「Key 配置」** 按钮。
-2. 在弹窗中粘贴你的 Atlas Cloud API Key（可在 [atlascloud.ai](https://www.atlascloud.ai/) 获取）。
+2. 在弹窗中粘贴你的 Atlas Cloud API Key（可在 [atlascloud.ai](https://www.atlascloud.ai/zh?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama) 获取）。
 3. 点击 **「保存并应用」**，系统会自动把该 Key 批量应用到所有 Atlas 模型（对话 / 图片 / 视频共用同一个 Key）。
 4. 提示「Atlas Key 已批量更新」即配置成功，回到短剧工作台即可生成图片与视频。
 
 > 该接口对应后台 `PUT /system/model/batchKeyByProvider`，按厂商编码 `atlas` 批量更新 `chat_model.api_key`，需拥有 `system:model:edit` 权限。
 
-### 5. 安装 FFmpeg（视频合成必需）
+### 5. 购买 Atlas Cloud 额度（支付宝 / 微信支付）
+1. 打开 [Atlas Cloud](https://www.atlascloud.ai/zh?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama)，选择充值额度后点击 **Buy**。
+
+![选择充值额度并点击 Buy](docs/demo/06-atlascloud-recharge.png)
+
+2. 进入结算页后，如有提示请先选择人民币（CNY）结算；如果页面直接进入了 Link 验证或绑定流程，请点击 **Pay without Link** 取消 Link 流程。
+
+![不使用 Link 支付](docs/demo/07-atlascloud-pay-without-link.png)
+
+3. 取消后会回到支付方式选择页面；选择人民币（CNY）结算时，可选择 **支付宝** 或 **微信支付**，再点击 **Pay** 完成购买。
+
+![选择支付宝或微信支付](docs/demo/08-atlascloud-payment-methods.png)
+
+### 6. 安装 FFmpeg（视频合成必需）
 短剧「分镜视频合成成片」功能依赖后端的 FFmpeg（需要包含 `libx264` 和 `aac` 编码器）。Windows 下可用 `ruoyi-ai` 仓库提供的一键脚本自动安装并配置环境变量：
 
 ```powershell
@@ -88,6 +101,6 @@ npm run build
 
 ## 独家赞助
 
-访问 [Atlas Cloud 官网](https://www.atlascloud.ai?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama) · 编程计划优惠
+访问 [Atlas Cloud 官网](https://www.atlascloud.ai/zh?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama) · 编程计划优惠
 
 全模态 AI 推理平台，为开发者提供统一的 AI API，支持视频生成、图像生成和大语言模型。一次接入，即可访问 300+ 精选模型。

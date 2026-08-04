@@ -51,16 +51,29 @@ When `VITE_API_URL` uses a relative path, requests go through the Vite proxy to 
 Open the frontend and sign in with a backend account (the default administrator account is `admin` / `admin123`). On the Creation Center home page, enter a story idea and click **Start Creating** to open the short drama workspace, then complete script refinement, asset configuration, storyboard confirmation, and video synthesis.
 
 ### 4. Configure the Atlas Key with One Click (Important)
-Image and video generation depends on [Atlas Cloud](https://www.atlascloud.ai/). Configure an API Key before using these features:
+Image and video generation depends on [Atlas Cloud](https://www.atlascloud.ai/zh?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama). Configure an API Key before using these features:
 
 1. Click **Key Configuration** in the upper-right corner of the Creation Center home page.
-2. Paste your Atlas Cloud API Key in the dialog. You can obtain one from [atlascloud.ai](https://www.atlascloud.ai/).
+2. Paste your Atlas Cloud API Key in the dialog. You can obtain one from [atlascloud.ai](https://www.atlascloud.ai/zh?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama).
 3. Click **Save and Apply**. The system applies the key to all Atlas models in bulk; the same key is used for chat, image, and video generation.
 4. When **Atlas Key updated successfully** appears, return to the short drama workspace to generate images and videos.
 
 > This calls the backend endpoint `PUT /system/model/batchKeyByProvider`, which updates `chat_model.api_key` for the provider code `atlas`. The account must have the `system:model:edit` permission.
 
-### 5. Install FFmpeg (Required for Video Synthesis)
+### 5. Purchase Atlas Cloud Credits (Alipay / WeChat Pay)
+1. Open [Atlas Cloud](https://www.atlascloud.ai/zh?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama), choose a recharge amount, and click **Buy**.
+
+![Choose a recharge amount and click Buy](docs/demo/06-atlascloud-recharge.png)
+
+2. At checkout, select CNY if prompted. If it opens the Link verification or sign-in flow directly, select **Pay without Link** to cancel the Link flow.
+
+![Pay without Link](docs/demo/07-atlascloud-pay-without-link.png)
+
+3. You will return to the payment-method screen. With CNY selected, choose **Alipay** or **WeChat Pay**, then click **Pay** to complete the purchase.
+
+![Choose Alipay or WeChat Pay](docs/demo/08-atlascloud-payment-methods.png)
+
+### 6. Install FFmpeg (Required for Video Synthesis)
 The short drama video synthesis feature depends on backend FFmpeg with the `libx264` and `aac` encoders. On Windows, use the script provided by the `ruoyi-ai` repository to install FFmpeg and configure the environment variables:
 
 ```powershell
@@ -88,6 +101,6 @@ The build output is generated in `dist/`. The default production API prefix is `
 
 ## Exclusive Sponsorship
 
-Visit [Atlas Cloud](https://www.atlascloud.ai?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama) for the developer plan.
+Visit [Atlas Cloud](https://www.atlascloud.ai/zh?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama) for the developer plan.
 
 A multimodal AI inference platform that provides a unified AI API for video generation, image generation, and large language models. One integration gives you access to 300+ selected models.
