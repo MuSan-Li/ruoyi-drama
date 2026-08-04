@@ -1,91 +1,93 @@
 # ruoyi-drama
 
-> **后端服务**（短剧前端依赖此前端运行的后台）：
+**[中文](README_ZH.md)**
+
+> **Backend service** (the short drama frontend depends on this backend):
 >
-> | 平台    | 地址                                              |
+> | Platform | URL |
 > | ------- | ------------------------------------------------- |
-> | GitHub  | https://github.com/ageerle/ruoyi-ai               |
-> | Gitee   | https://gitee.com/ageerle/ruoyi-ai                |
+> | GitHub | https://github.com/ageerle/ruoyi-ai |
+> | Gitee | https://gitee.com/ageerle/ruoyi-ai |
 >
-> 请先按 [ruoyi-ai](https://github.com/ageerle/ruoyi-ai) 文档启动后台，默认地址 `http://127.0.0.1:6039`，本前端会通过 Vite 代理与之对接。
+> Start the backend by following the [ruoyi-ai](https://github.com/ageerle/ruoyi-ai) documentation. The default address is `http://127.0.0.1:6039`, and this frontend connects to it through the Vite proxy.
 
-## 演示截图
+## Screenshots
 
-从灵感输入到成片输出，完整呈现一条短剧的创作流程：创作中心首页 → 一键配置 Atlas Key → 剧本打磨 → 资产配置 → 分镜确认与视频合成。
+The complete short drama creation workflow, from entering an idea to producing the final video: creation center → one-click Atlas Key configuration → script refinement → asset configuration → storyboard confirmation and video synthesis.
 
-![创作中心首页](docs/demo/01-creation-center.png)
+![Creation center](docs/demo/01-creation-center.png)
 
-![一键配置 Atlas Key](docs/demo/02-key-config.png)
+![One-click Atlas Key configuration](docs/demo/02-key-config.png)
 
-![短剧工作台 · 剧本打磨](docs/demo/03-script.png)
+![Short drama workspace - script refinement](docs/demo/03-script.png)
 
-![资产配置](docs/demo/04-assets.png)
+![Asset configuration](docs/demo/04-assets.png)
 
-![分镜确认与视频合成](docs/demo/05-storyboard.png)
+![Storyboard confirmation and video synthesis](docs/demo/05-storyboard.png)
 
-## 简单教程
+## Quick Tutorial
 
-### 1. 启动后台
-按 [ruoyi-ai](https://github.com/ageerle/ruoyi-ai) 文档启动后台服务，确保能访问 `http://127.0.0.1:6039`。
+### 1. Start the Backend
+Follow the [ruoyi-ai](https://github.com/ageerle/ruoyi-ai) documentation to start the backend service and make sure `http://127.0.0.1:6039` is reachable.
 
-### 2. 启动前端
+### 2. Start the Frontend
 ```bash
 npm install
 npm run dev
 ```
-默认开发地址由 Vite 输出，默认后台为 `http://127.0.0.1:6039`。
+Vite prints the default development address. The default backend address is `http://127.0.0.1:6039`.
 
-如需切换后台，只修改 `.env.development`：
+To use a different backend, update `.env.development`:
 
 ```dotenv
 VITE_API_URL=/dev-api
-VITE_API_PROXY_TARGET=http://你的后台地址:端口
-VITE_CLIENT_ID=后台配置的客户端ID
+VITE_API_PROXY_TARGET=http://your-backend-host:port
+VITE_CLIENT_ID=client-id-from-backend
 ```
 
-`VITE_API_URL` 使用相对路径时，请求由 Vite 代理，可以避免浏览器跨域问题；也可将它改为后台完整 URL，但后台需要允许跨域。
+When `VITE_API_URL` uses a relative path, requests go through the Vite proxy to avoid browser CORS issues. You can also set it to the full backend URL, but the backend must allow cross-origin requests.
 
-### 3. 登录创作
-打开前端 → 使用后台账号登录（默认管理员账号 `admin` / `admin123`）→ 在「创作中心」首页写下故事灵感 → 点击「开始创作」进入短剧工作台，依次完成剧本打磨、资产配置、分镜确认与视频合成。
+### 3. Sign In and Create
+Open the frontend and sign in with a backend account (the default administrator account is `admin` / `admin123`). On the Creation Center home page, enter a story idea and click **Start Creating** to open the short drama workspace, then complete script refinement, asset configuration, storyboard confirmation, and video synthesis.
 
-### 4. 一键配置 Atlas Key（重要）
-短剧的图片 / 视频生成都依赖 [Atlas Cloud](https://www.atlascloud.ai/)。使用前需要配置 API Key：
+### 4. Configure the Atlas Key with One Click (Important)
+Image and video generation depends on [Atlas Cloud](https://www.atlascloud.ai/). Configure an API Key before using these features:
 
-1. 在「创作中心」首页右上角点击 **「Key 配置」** 按钮。
-2. 在弹窗中粘贴你的 Atlas Cloud API Key（可在 [atlascloud.ai](https://www.atlascloud.ai/) 获取）。
-3. 点击 **「保存并应用」**，系统会自动把该 Key 批量应用到所有 Atlas 模型（对话 / 图片 / 视频共用同一个 Key）。
-4. 提示「Atlas Key 已批量更新」即配置成功，回到短剧工作台即可生成图片与视频。
+1. Click **Key Configuration** in the upper-right corner of the Creation Center home page.
+2. Paste your Atlas Cloud API Key in the dialog. You can obtain one from [atlascloud.ai](https://www.atlascloud.ai/).
+3. Click **Save and Apply**. The system applies the key to all Atlas models in bulk; the same key is used for chat, image, and video generation.
+4. When **Atlas Key updated successfully** appears, return to the short drama workspace to generate images and videos.
 
-> 该接口对应后台 `PUT /system/model/batchKeyByProvider`，按厂商编码 `atlas` 批量更新 `chat_model.api_key`，需拥有 `system:model:edit` 权限。
+> This calls the backend endpoint `PUT /system/model/batchKeyByProvider`, which updates `chat_model.api_key` for the provider code `atlas`. The account must have the `system:model:edit` permission.
 
-### 5. 安装 FFmpeg（视频合成必需）
-短剧「分镜视频合成成片」功能依赖后端的 FFmpeg（需要包含 `libx264` 和 `aac` 编码器）。Windows 下可用 `ruoyi-ai` 仓库提供的一键脚本自动安装并配置环境变量：
+### 5. Install FFmpeg (Required for Video Synthesis)
+The short drama video synthesis feature depends on backend FFmpeg with the `libx264` and `aac` encoders. On Windows, use the script provided by the `ruoyi-ai` repository to install FFmpeg and configure the environment variables:
 
 ```powershell
-# 在 ruoyi-ai 仓库根目录执行（Windows PowerShell）
+# Run from the ruoyi-ai repository root in Windows PowerShell
 powershell -ExecutionPolicy Bypass -File .\docs\script\install-ffmpeg-windows.ps1
 ```
 
-脚本会：
-1. 检测是否已安装 `ffmpeg` / `ffprobe`，缺失则通过 `winget` 安装 `Gyan.FFmpeg`；
-2. 把绝对路径写入用户环境变量 `FFMPEG_PATH`、`FFPROBE_PATH`，并追加到 `Path`；
-3. 校验是否包含 `libx264`、`aac` 编码器，不满足会直接报错。
+The script:
+1. Checks whether `ffmpeg` and `ffprobe` are installed and uses `winget` to install `Gyan.FFmpeg` when they are missing;
+2. Writes the absolute paths to the user environment variables `FFMPEG_PATH` and `FFPROBE_PATH`, and appends them to `Path`;
+3. Verifies that the `libx264` and `aac` encoders are available and fails if they are missing.
 
-> 安装完成后**必须完全重启 IntelliJ IDEA 和 ruoyi-ai 后端服务**，Spring 才会读取到新的 `FFMPEG_PATH` / `FFPROBE_PATH`。
-> 脚本依赖 `winget`，若未安装会提示先从 Microsoft Store 安装「应用安装程序」；也可改用项目 Dockerfile 运行后端（镜像内已含 FFmpeg）。
+> After installation, **fully restart IntelliJ IDEA and the ruoyi-ai backend service** so that Spring reads the new `FFMPEG_PATH` and `FFPROBE_PATH` values.
+> The script requires `winget`. If it is not installed, install **App Installer** from the Microsoft Store first. You can also run the backend with the project Dockerfile, which already includes FFmpeg.
 
-## 生产构建
+## Production Build
 
 ```bash
 npm run build
 ```
 
-产物位于 `dist/`。默认生产接口前缀为 `/prod-api`，示例 `nginx.conf` 会将该前缀代理到 `http://127.0.0.1:6039`。部署时按实际情况修改 `proxy_pass` 即可。
+The build output is generated in `dist/`. The default production API prefix is `/prod-api`; the example `nginx.conf` proxies this prefix to `http://127.0.0.1:6039`. Adjust `proxy_pass` for your deployment environment.
 
 ---
 
-## 独家赞助
+## Exclusive Sponsorship
 
-访问 [Atlas Cloud 官网](https://www.atlascloud.ai?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama) · 编程计划优惠
+Visit [Atlas Cloud](https://www.atlascloud.ai?ref=89F97E&utm_source=github&utm_campaign=ruoyi-drama) for the developer plan.
 
-全模态 AI 推理平台，为开发者提供统一的 AI API，支持视频生成、图像生成和大语言模型。一次接入，即可访问 300+ 精选模型。
+A multimodal AI inference platform that provides a unified AI API for video generation, image generation, and large language models. One integration gives you access to 300+ selected models.
