@@ -26,3 +26,7 @@ dist-ssr
 
 # Claude Code
 .claude
+
+# Local production media and verification output
+/artifacts/
+/target/

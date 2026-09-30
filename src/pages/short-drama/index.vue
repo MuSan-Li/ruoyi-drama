@@ -1,4 +1,17 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
+import { get } from '@/utils/request';
+import LocalVideoPreview from './components/LocalVideoPreview.vue';
+import RevisedVideoUpload from './components/RevisedVideoUpload.vue';
+import ShotBatchSelect from './components/ShotBatchSelect.vue';
+import ReferenceAudio from './components/ReferenceAudio.vue';
+import ContinuityReview from './components/ContinuityReview.vue';
+import ShotTiming from './components/ShotTiming.vue';
+import VisualAssetCoverage from './components/VisualAssetCoverage.vue';
+import ShotFramePreview from './components/ShotFramePreview.vue';
+import ShotSourceMaterial from './components/ShotSourceMaterial.vue';
+import ShotNavigator from './components/ShotNavigator.vue';
+import RevisionImport from './components/RevisionImport.vue';
+import { reviewShot, continuityOf } from './shotReview';
 /*
  * 国际化（i18n）迁移约定 —— 第二批机械迁移时遵循：
  * 1. code→label 映射表（sceneTypeLabels / roleLevelLabels / artStyleLabels / phaseLabels 等）改为 computed，
@@ -19,7 +32,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { CircleCheckFilled } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
   analyzeAssets,
@@ -83,9 +96,13 @@ type StageName = 'script' | 'assets' | 'storyboard';
 type StepName = 'idea' | 'script' | 'assets' | 'storyboard';
 
 const route = useRoute();
+const router = useRouter();
 const userStore = useUserStore();
 const { t } = useI18n();
-const storyboardToolsCollapsed = ref(false);
+const storyboardToolsCollapsed = ref(true);
+const selectedShotNo = ref(1);
+const visibleStoryboards = computed(() => { const selected = storyboardDrafts.value.find(s => s.sceneNo === selectedShotNo.value) || storyboardDrafts.value[0]; return selected ? [selected] : []; });
+const adjacentShots = computed(() => { const i = storyboardDrafts.value.findIndex(s => s.sceneNo === visibleStoryboards.value[0]?.sceneNo); return { before: storyboardDrafts.value[i - 1], after: storyboardDrafts.value[i + 1] }; });
 
 const workflowSteps = computed<Array<{ name: StepName; index: string; title: string; desc: string }>>(() => [
   { name: 'idea', index: '01', title: t('shortDrama.workflow.idea.title'), desc: t('shortDrama.workflow.idea.desc') },
@@ -190,6 +207,7 @@ const loadingProjects = ref(false);
 const generating = ref(false);
 const savingScript = ref(false);
 const regeneratingStoryboard = ref(false);
+const storyboardGenerationError = ref('');
 const analyzingAssets = ref(false);
 const polishingScript = ref(false);
 const generatingVideo = ref<Record<SnowflakeId, boolean>>({});
@@ -246,6 +264,7 @@ const scriptForm = ref<ShortDramaScript>({
   sourceType: 'manual',
 });
 
+const scriptBudgetSeconds = computed(() => Array.from((scriptForm.value.scriptText || '').matchAll(/预计\s*(\d+(?:\.\d+)?)\s*秒/g)).reduce((sum, match) => sum + Number(match[1]), 0));
 const hasProject = computed(() => !!currentProjectId.value);
 const narrationAudio = computed(() => audios.value.find(audio => audio.audioType === 'narration'));
 
@@ -345,6 +364,8 @@ function openExternal(url: string | null | undefined) {
 interface CharacterRef { name: string; appearance: string; slot: string; }
 interface PhotographyRule {
   scene_summary?: string;
+  axis?: string;
+  camera?: string;
   lighting?: { direction?: string; quality?: string };
   characters?: Array<{ name: string; screen_position?: string; posture?: string; facing?: string }>;
   depth_of_field?: string;
@@ -402,8 +423,8 @@ async function refreshModels() {
     imageModels.value = readList<GetSessionListVO>(imageRes);
     audioModels.value = readList<GetSessionListVO>(audioRes);
     if (!ideaForm.value.model && models.value[0]?.modelName) ideaForm.value.model = models.value[0].modelName;
-    if (!ideaForm.value.videoModel && videoModels.value[0]?.modelName) ideaForm.value.videoModel = videoModels.value[0].modelName;
-    if (!ideaForm.value.imageModel && imageModels.value[0]?.modelName) ideaForm.value.imageModel = imageModels.value[0].modelName;
+    if (!ideaForm.value.videoModel) ideaForm.value.videoModel = videoModels.value.find(m=>m.modelName?.endsWith('/reference-to-video'))?.modelName || videoModels.value[0]?.modelName || '';
+    if (!ideaForm.value.imageModel) ideaForm.value.imageModel = imageModels.value.find(m => m.modelName === 'openai/gpt-image-2.5-flare/text-to-image')?.modelName || imageModels.value.find(m => !m.modelName?.endsWith('/edit'))?.modelName || '';
     if (!ideaForm.value.audioModel && audioModels.value[0]?.modelName) ideaForm.value.audioModel = audioModels.value[0].modelName;
   } catch { ElMessage.error('获取模型列表失败，请先检查模型配置'); }
   finally { loadingModels.value = false; }
@@ -411,7 +432,13 @@ async function refreshModels() {
 
 async function refreshProjects() {
   loadingProjects.value = true;
-  try { projects.value = await listShortDramaProjects(); }
+  try {
+    const result = await listShortDramaProjects();
+    if (!Array.isArray(result)) throw new Error('Invalid project list response');
+    projects.value = result;
+  } catch {
+    ElMessage.error('项目列表暂时无法加载，请稍后刷新');
+  }
   finally { loadingProjects.value = false; }
 }
 
@@ -450,6 +477,7 @@ async function loadDetail(projectId: SnowflakeId) {
   composeForm.value.narrationAudioId = existingNarration?.audioUrl ? existingNarration.id : undefined;
   storyboardDrafts.value = res.storyboards || [];
   currentProjectId.value = projectId;
+  if (route.query.projectId !== projectId) await router.replace({ name: 'shortDrama', query: { projectId } });
   composeStoryboardIds.value = storyboardDrafts.value
     .filter(item => item.id && item.videoStatus === 'done' && item.videoUrl)
     .map(item => item.id!);
@@ -553,6 +581,7 @@ async function handleCreateFromIdea() {
         model: ideaForm.value.model,
         artStyle: ideaForm.value.artStyle,
         aspectRatio: ideaForm.value.videoRatio,
+        scriptOnly: true,
       }),
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -560,6 +589,8 @@ async function handleCreateFromIdea() {
 
   let projectId: SnowflakeId | null = null;
   let lastStreamPhase = '';
+  let eventName = '';
+  let creationError = '';
   const phaseLabels: Record<string, string> = {
     script: '剧本正文', assets: '资产分析', assets_chars: '角色分析', assets_locs: '场景分析',
     storyboard_plan: '分镜规划', photography: '摄影规则', acting: '表演指导', storyboard_detail: '分镜细化',
@@ -573,8 +604,8 @@ async function handleCreateFromIdea() {
       buf += decoder.decode(value, { stream: true });
       const lines = buf.split('\n');
       buf = lines.pop() || '';
-      let eventName = '';
       for (const line of lines) {
+        if (!line.trim()) { eventName = ''; continue; }
         if (line.startsWith('event:')) { eventName = line.slice(6).trim(); continue; }
         if (!line.startsWith('data:')) continue;
         try {
@@ -610,7 +641,8 @@ async function handleCreateFromIdea() {
             } else if (eventName === 'complete') {
             projectId = data.projectId;
           } else if (eventName === 'error') {
-            sseProgressMsg.value = '生成失败：' + (data.message || '未知错误');
+            creationError = data.message || '未知错误';
+            sseProgressMsg.value = '生成失败：' + creationError;
             if (data.projectId && !projectId) projectId = data.projectId;
           }
         } catch (e) {
@@ -623,7 +655,8 @@ async function handleCreateFromIdea() {
   if (projectId) {
     await refreshProjects();
     await loadDetail(projectId);
-    ElMessage.success(t('shortDrama.messages.generateSuccess'));
+    if (creationError) ElMessage.warning('已保留草稿：' + creationError);
+    else ElMessage.success('剧本草稿已生成，请审阅后再分析资产');
   } else {
     ElMessage.error('生成失败，未获取到项目ID');
   }
@@ -640,7 +673,8 @@ async function handlePolishScript() {
   if (!currentProjectId.value) return;
   polishingScript.value = true;
   try {
-    const res: any = await polishScript(currentProjectId.value);
+    await persistCurrentScript();
+    const res: any = await polishScript(currentProjectId.value, ideaForm.value.model);
     if (res.script) scriptForm.value = { ...res.script };
     if (res.project) {
       await saveShortDramaProject(res.project);
@@ -650,13 +684,20 @@ async function handlePolishScript() {
   } finally { polishingScript.value = false; }
 }
 
+async function persistCurrentScript() {
+  if (!currentProjectId.value) return;
+  if (detail.value?.project.projectName?.trim()) {
+    await saveShortDramaProject({ id: currentProjectId.value, projectName: detail.value.project.projectName.trim() });
+  }
+  const saved = await saveShortDramaScript({ ...scriptForm.value, projectId: currentProjectId.value });
+  scriptForm.value = { ...saved };
+}
+
 async function handleSaveScript() {
   if (!currentProjectId.value) return;
   savingScript.value = true;
   try {
-    scriptForm.value.projectId = currentProjectId.value;
-    const saved = await saveShortDramaScript(scriptForm.value);
-    scriptForm.value = { ...saved };
+    await persistCurrentScript();
     await loadDetail(currentProjectId.value);
     ElMessage.success(t('shortDrama.messages.scriptSaved'));
   } finally { savingScript.value = false; }
@@ -666,7 +707,8 @@ async function handleAnalyzeAssets() {
   if (!currentProjectId.value || !scriptForm.value.id) { ElMessage.warning('请先生成或保存剧本'); return; }
   analyzingAssets.value = true;
   try {
-    const res: any = await analyzeAssets(currentProjectId.value, scriptForm.value.id);
+    await persistCurrentScript();
+    const res: any = await analyzeAssets(currentProjectId.value, scriptForm.value.id!, ideaForm.value.model);
     characters.value = res.characters || [];
     locations.value = res.locations || [];
     activeStage.value = 'assets';
@@ -678,10 +720,34 @@ async function handleAnalyzeAssets() {
 
 // ---- Step 04: Storyboard ----
 
+const importingPlan = ref(false);
+async function handleImportReviewedPlan(event: Event) {
+  const input=event.target as HTMLInputElement;
+  const file=input.files?.[0];
+  if(!file || !currentProjectId.value || !scriptForm.value.id || importingPlan.value) return;
+  importingPlan.value=true;
+  try {
+    if(file.size>5*1024*1024)throw new Error('规划稿请控制在5MB以内');
+    const plan=JSON.parse(await file.text());
+    if(!Array.isArray(plan.panels) || plan.expectedScriptText!==scriptForm.value.scriptText)throw new Error('规划稿与当前剧本不一致');
+    await persistCurrentScript();
+    const response=await fetch(import.meta.env.VITE_API_URL+`/short-drama/${currentProjectId.value}/plan-storyboard/review`,{
+      method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${userStore.token}`,ClientID:import.meta.env.VITE_CLIENT_ID},
+      body:JSON.stringify({scriptId:scriptForm.value.id,expectedScriptText:plan.expectedScriptText,panels:plan.panels,model:ideaForm.value.model})
+    });
+    const result=await response.json();
+    if(!response.ok || result.code!==200)throw new Error(result.msg || '规划稿导入失败');
+    ElMessage.success(`已校验导入${result.data}镜，继续细化`);
+    await handleGenerateStoryboard();
+  } catch(e) { ElMessage.error(e instanceof Error?e.message:'规划稿导入失败'); }
+  finally { importingPlan.value=false; input.value=''; }
+}
+
 async function handleGenerateStoryboard() {
   if (!currentProjectId.value || !scriptForm.value.id) { ElMessage.warning('请先生成或保存剧本'); return; }
   if (composeBusy.value) { ElMessage.warning('成片正在合成，请稍后再修改分镜'); return; }
   regeneratingStoryboard.value = true;
+  storyboardGenerationError.value = '';
   invalidateComposeView();
   resetSseProgress();
   sseStreamPanels.value = [];
@@ -693,6 +759,7 @@ async function handleGenerateStoryboard() {
   let streamError = '';
   let completed = false;
   try {
+    await persistCurrentScript();
     const modelQuery = ideaForm.value.model ? `&model=${encodeURIComponent(ideaForm.value.model)}` : '';
     const response = await fetch(
       import.meta.env.VITE_API_URL + `/short-drama/${currentProjectId.value}/plan-storyboard/stream?scriptId=${scriptForm.value.id}${modelQuery}`,
@@ -727,7 +794,7 @@ async function handleGenerateStoryboard() {
           if (eventName === 'phase') {
             const step = sseProgressSteps.value.find(s => s.phase === data.phase);
             if (step) step.status = data.status;
-            sseProgressMsg.value = data.message || '';
+            if (data.message && !data.message.startsWith('模型仍')) sseProgressMsg.value = data.message;
           } else if (eventName === 'stream' && data.text) {
             const phase = data.phase || 'storyboard_plan';
             if (phase !== lastStreamPhase) {
@@ -742,7 +809,10 @@ async function handleGenerateStoryboard() {
             });
           } else if (eventName === 'panel' && data.panel) {
             // 增量分镜：第一个 panel 完成就展示，后续逐个追加渲染
-            const p = data.panel as ShortDramaStoryboard;
+            const raw = data.panel;
+            const p = { ...raw, sceneNo: raw.sceneNo ?? raw.panel_number,
+              sceneTitle: raw.sceneTitle || raw.segment_goal || raw.location,
+              sceneText: raw.sceneText || raw.description } as ShortDramaStoryboard;
             const idx = sseStreamPanels.value.findIndex(s => s.sceneNo === p.sceneNo);
             if (idx >= 0) Object.assign(sseStreamPanels.value[idx], p);
             else sseStreamPanels.value.push(p);
@@ -760,11 +830,13 @@ async function handleGenerateStoryboard() {
     if (streamError) throw new Error(streamError);
     if (!completed) throw new Error('分镜生成连接提前结束，请查看后端日志');
     await loadDetail(currentProjectId.value);
+    await refreshProjects();
     activeStage.value = 'storyboard';
     activeStep.value = 'storyboard';
     maxReachedStep.value = 'storyboard';
     ElMessage.success('分镜已重新生成');
   } catch (error: any) {
+    storyboardGenerationError.value = '分镜生成中断：' + (error.message || '网络错误') + '。已完成的场次和细化批次保留，再次生成将继续。';
     ElMessage.error('分镜生成失败：' + (error.message || '网络错误'));
   } finally {
     if (reader) reader.releaseLock();
@@ -774,6 +846,12 @@ async function handleGenerateStoryboard() {
 
 async function handleSaveStoryboard(item: ShortDramaStoryboard) {
   if (composeBusy.value || savingStoryboard.value) return;
+  const timing = reviewShot(item);
+  if (timing.overflow) { ElMessage.warning(`镜头内容至少约 ${timing.required} 秒，请调整时间预算`); return; }
+  if (item.continuityJson) {
+    try { const value = JSON.parse(item.continuityJson); if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(); }
+    catch { ElMessage.warning('镜头承接信息必须是有效的 JSON 对象'); return; }
+  }
   savingStoryboard.value = true;
   try {
     const saved = await saveShortDramaStoryboard(item);
@@ -901,11 +979,15 @@ async function handleDownloadComposition() {
   }
 }
 
-function formatVideoDuration(seconds?: number) {
-  return seconds == null ? '' : `${seconds.toFixed(1)} 秒`;
+function formatVideoDuration(seconds?: number | string) {
+  if (seconds == null || seconds === '') return '';
+  const duration = Number(seconds);
+  return Number.isFinite(duration) ? `${duration.toFixed(1)} 秒` : '';
 }
 
 async function handleGenerateVideo(item: ShortDramaStoryboard) {
+  if (reviewShot(item).overflow) { ElMessage.warning('当前镜头内容超时，请先修订'); return; }
+  if (detail.value?.project.status === 'script_changed') { ElMessage.warning('剧本已修改，请重新生成分镜'); return; }
   if (!ideaForm.value.videoModel) { ElMessage.warning('请先在分镜阶段选择视频模型'); return; }
   if (!item.id) return;
   if (composeBusy.value) { ElMessage.warning('成片正在合成，请稍后再生成分镜视频'); return; }
@@ -954,12 +1036,21 @@ function startPolling(item: ShortDramaStoryboard) {
   if (!item.id) return;
   const id = item.id;
   stopPolling(id);
-  let attempts = 0;
+  const startedAt = Date.now();
+  const pollingModel = ideaForm.value.videoModel;
+  let checking = false;
   let failed404 = false;
   pollingTimers.value[id] = setInterval(async () => {
-    if (++attempts > 60 || !ideaForm.value.videoModel) { stopPolling(id); return; }
+    if (!pollingModel) { stopPolling(id); return; }
+    if (Date.now() - startedAt > 30 * 60 * 1000) {
+      stopPolling(id);
+      ElMessage.info('视频仍在处理，可点击查询进度继续检查，无需重新生成');
+      return;
+    }
+    if (checking) return;
+    checking = true;
     try {
-      const updated = await retrieveStoryboardVideo(id, ideaForm.value.videoModel);
+      const updated = await retrieveStoryboardVideo(id, pollingModel);
       Object.assign(item, updated);
       if (updated.videoStatus === 'done' || updated.videoStatus === 'failed') stopPolling(id);
     } catch (e: any) {
@@ -975,8 +1066,10 @@ function startPolling(item: ShortDramaStoryboard) {
           ElMessage.warning('视频生成任务已失效，请重新生成');
         }
       }
+    } finally {
+      checking = false;
     }
-  }, 3000);
+  }, 10000);
 }
 
 /** 手动查询视频进度 */
@@ -1004,7 +1097,26 @@ function stopPolling(id: SnowflakeId) {
 }
 
 
+const videoBatchStart = ref(1);
+async function handleGenerateOpeningVideos() {
+  if (generatingAllVideos.value || composeBusy.value) return;
+  const selected=storyboardDrafts.value.filter(s=>(s.sceneNo || 0)>=videoBatchStart.value && (s.sceneNo || 0)<videoBatchStart.value+10 && !isDirectMaterial(s) && !['done','generating'].includes(s.videoStatus || ''));
+  if(!selected.length){ElMessage.info('本批镜头已完成或正在生成');return;}
+  if(selected.some(s=>reviewShot(s).overflow)){ElMessage.warning('所选镜头存在内容超时，请先修订');return;}
+  generatingAllVideos.value=true;
+  try {
+    const response:any=await get(`/short-drama/${currentProjectId.value}/visual-assets`).json();
+    const assets=response.data?.assets;
+    if(!Array.isArray(assets))throw new Error(response.msg || '无法检查镜头资产');
+    const missing=selected.filter(s=>!assets.some((a:any)=>String(a.storyboardId)===String(s.id) && a.kind==='shot_frame' && a.status==='done'));
+    if(missing.length){ElMessage.warning(`请先完成镜 ${missing.map(s=>s.sceneNo).join('、')} 的关键帧`);return;}
+    for(const shot of selected) {await handleGenerateVideo(shot);if(shot.videoStatus==='failed')break;}
+  } catch(error:any) {ElMessage.error(error.message || '所选镜头提交失败');}
+  finally {generatingAllVideos.value=false;}
+}
+
 async function handleGenerateAllVideos() {
+  if (detail.value?.project.status === 'script_changed') { ElMessage.warning('剧本已修改，请重新生成分镜'); return; }
   if (!currentProjectId.value || !ideaForm.value.videoModel) { ElMessage.warning('请先选择视频模型'); return; }
   if (composeBusy.value) { ElMessage.warning('成片正在合成，请稍后再生成分镜视频'); return; }
   generatingAllVideos.value = true;
@@ -1128,12 +1240,6 @@ async function confirmAndApplyImageTask(task: PendingImageTask, target: ShortDra
 /** 当前选中的图片模型 */
 const selectedImageModel = computed(() => ideaForm.value.imageModel || '');
 
-/** 图片模型标签文本 */
-const imageModelLabel = computed(() => {
-  const m = imageModels.value.find(item => item.modelName === ideaForm.value.imageModel);
-  return m?.modelDescribe || ideaForm.value.imageModel || '未知';
-});
-
 /** 通用：异步启动图片生成 + 轮询确认 */
 async function startAsyncImageGen(assetType: string, assetId: SnowflakeId, model: string, referenceImageUrl?: string): Promise<{ predictionId: string }> {
   const prediction: any = await startImageGeneration(assetType, assetId, model, referenceImageUrl);
@@ -1208,6 +1314,12 @@ async function handleGenerateAppearanceImage(appearance: ShortDramaCharacterAppe
   generatingImage.value[key] = true;
   try {
     // 1. 异步启动
+    await saveShortDramaAppearance({
+      id: appearanceId, characterId: appearance.characterId,
+      appearanceIndex: appearance.appearanceIndex, changeReason: appearance.changeReason,
+      description: appearance.description, referenceImageUrl: appearance.referenceImageUrl,
+      voice: appearance.voice,
+    });
     const { predictionId } = await startAsyncImageGen('appearance', appearanceId, selectedImageModel.value, assetReferenceImages.value[key]);
     savePendingImageTask(key, {
       projectId, assetType: 'appearance', assetId: appearanceId,
@@ -1247,6 +1359,8 @@ async function handleGenerateLocationImage(location: ShortDramaLocation) {
   const projectId = currentProjectId.value!;
   generatingImage.value[key] = true;
   try {
+    location.descriptions = JSON.stringify(locationDescEdits.value[locationId] || locationDescriptions(location));
+    await saveShortDramaLocation(location);
     const { predictionId } = await startAsyncImageGen('location', locationId, selectedImageModel.value, assetReferenceImages.value[key]);
     savePendingImageTask(key, {
       projectId, assetType: 'location', assetId: locationId,
@@ -1526,7 +1640,7 @@ onMounted(async () => {
   }
 
   await Promise.all([refreshModels(), refreshProjects()]);
-  const requestedProject = Number.isFinite(incomingProjectId)
+  const requestedProject = /^\d+$/.test(incomingProjectId)
     ? projects.value.find(item => item.id === incomingProjectId)
     : undefined;
   const initialProject = requestedProject || (!incomingIdea && !startFresh ? projects.value[0] : undefined);
@@ -1553,6 +1667,9 @@ onUnmounted(() => {
   imagePollTimers.value = {};
   imageTaskChannel?.close();
 });
+function isDirectMaterial(item: ShortDramaStoryboard) {
+  try { return JSON.parse(item.continuityJson || '{}').source_media?.mode === 'direct_insert'; } catch { return false; }
+}
 </script>
 
 <template>
@@ -1581,8 +1698,8 @@ onUnmounted(() => {
       </div>
     </aside>
 
-    <main class="workspace">
-      <section class="hero-panel">
+    <main class="workspace" :class="{ 'review-workspace': activeStep === 'storyboard' }">
+      <section v-if="!hasProject" class="hero-panel">
         <div class="hero-copy">
           <h1>短剧创作</h1>
           <p>先定故事，AI 自动完成剧本打磨、资产提取、分镜规划。每一步都可以检查调整。</p>
@@ -1603,6 +1720,7 @@ onUnmounted(() => {
       </section>
 
       <!-- SSE progress overlay -->
+      <details v-if="storyboardGenerationError" class="generation-error"><summary>分镜生成中断 · 查看原因</summary><p>{{ storyboardGenerationError }}</p></details>
       <section v-if="generating || regeneratingStoryboard" class="sse-progress-panel">
         <div class="sse-progress-card">
           <el-icon class="is-loading sse-spinner" :size="32"><MagicStick /></el-icon>
@@ -1643,12 +1761,12 @@ onUnmounted(() => {
       </section>
 
       <!-- ====== Step 01: Idea ====== -->
-      <section v-if="!generating && activeStep === 'idea'" class="form-step-panel idea-step" :class="{ expanded: showAdvanced }">
+      <section v-if="!generating && !regeneratingStoryboard && activeStep === 'idea'" class="form-step-panel idea-step" :class="{ expanded: showAdvanced }">
         <div class="section-head">
           <div>
             <span class="section-kicker">Step 01</span>
             <h2>输入创意</h2>
-            <p>简单说说这个故事想拍什么，AI 将自动生成完整的剧本、角色、场景和分镜。</p>
+            <p>先生成剧本草稿，审阅后再分析角色、场景和规划分镜。</p>
           </div>
         </div>
         <el-form label-position="top" class="creator-form">
@@ -1683,17 +1801,20 @@ onUnmounted(() => {
       </section>
 
       <!-- ====== Step 02: Script ====== -->
-      <section v-if="activeStep === 'script' && hasProject" class="form-step-panel">
+      <section v-if="!generating && !regeneratingStoryboard && activeStep === 'script' && hasProject" class="form-step-panel">
         <div class="section-head">
           <div>
             <span class="section-kicker">Step 02</span>
             <h2>剧本打磨</h2>
-            <p>检查 AI 生成的剧本名称、基调、大纲和正文，不满意可以重新打磨。</p>
+            <p>大纲把握节奏、因果与情绪转折；正文保留主要行动和必要对白。摄影、站位与逐秒细节在分镜阶段展开。</p>
           </div>
         </div>
         <div class="script-grid">
           <el-form label-position="top">
             <div class="script-meta">
+              <el-form-item v-if="detail" label="项目名称">
+                <el-input v-model="detail.project.projectName" placeholder="项目名称" />
+              </el-form-item>
               <el-form-item label="剧本名称">
                 <el-input v-model="scriptForm.scriptName" placeholder="剧本名称" />
               </el-form-item>
@@ -1701,6 +1822,7 @@ onUnmounted(() => {
                 <el-input v-model="scriptForm.tone" placeholder="风格/基调" />
               </el-form-item>
             </div>
+            <p v-if="scriptBudgetSeconds" class="script-budget">场次预算：{{ Math.floor(scriptBudgetSeconds / 60) }} 分 {{ Math.round(scriptBudgetSeconds % 60) }} 秒</p>
             <el-form-item label="剧情大纲">
               <el-input v-model="scriptForm.outlineText" type="textarea" :autosize="{ minRows: 7, maxRows: 14 }" placeholder="剧情大纲" />
             </el-form-item>
@@ -1716,13 +1838,13 @@ onUnmounted(() => {
           </el-button>
           <el-button :loading="savingScript" :disabled="!hasProject" @click="handleSaveScript">保存剧本</el-button>
           <el-button type="primary" :loading="analyzingAssets" :disabled="!scriptForm.id" @click="handleAnalyzeAssets">
-            分析资产
+            保存并分析资产
           </el-button>
         </div>
       </section>
 
       <!-- ====== Step 03: Assets ====== -->
-      <section v-if="activeStep === 'assets' && hasProject" class="form-step-panel">
+      <section v-if="!generating && !regeneratingStoryboard && activeStep === 'assets' && hasProject" class="form-step-panel">
         <div class="section-head">
           <div>
             <span class="section-kicker">Step 03</span>
@@ -1737,7 +1859,6 @@ onUnmounted(() => {
               </el-select>
             </div>
             <el-tag v-if="!selectedImageModel" type="danger" size="small" effect="light">未选择—图片生成不可用</el-tag>
-            <el-tag v-else type="success" size="small" effect="light">{{ imageModelLabel }}</el-tag>
             <span class="image-model-label" style="margin-left:12px">视觉风格</span>
             <el-tag type="primary" size="small" effect="light">{{ artStyleLabels[currentArtStyle] || currentArtStyle }}</el-tag>
             <el-button v-if="!assetPromptsEditing" size="small" text type="primary" @click="assetPromptsEditing = true">编辑提示词</el-button>
@@ -1747,6 +1868,7 @@ onUnmounted(() => {
 
         <!-- Characters -->
         <div v-if="characters.length > 0" class="asset-section">
+          <VisualAssetCoverage v-if="currentProjectId" :shots="storyboardDrafts" :project-id="currentProjectId" :image-model="ideaForm.imageModel" :chat-model="ideaForm.model" @select="id => { const shot = storyboardDrafts.find(s => s.id === id); if (shot) { selectedShotNo = shot.sceneNo; activeStep = 'storyboard'; } }" />
           <h3 class="asset-section-title">角色档案 ({{ characters.length }})</h3>
           <div class="asset-card-list">
             <article v-for="ch in sortedCharacters" :key="ch.id" class="asset-card">
@@ -1807,7 +1929,6 @@ onUnmounted(() => {
                       referrerpolicy="no-referrer"
                     />
                     <el-button v-if="assetReferenceImages[`appearance-${ap.id}`]" size="small" text type="danger" @click="delete assetReferenceImages[`appearance-${ap.id}`]">移除</el-button>
-                    <span v-else class="asset-reference-hint">可选，不上传则按文字提示生成</span>
                   </div>
                   <!-- 图片画廊 -->
                   <div v-if="parseJsonStrArray(ap.imageUrls).length" class="image-gallery">
@@ -1914,8 +2035,20 @@ onUnmounted(() => {
                     referrerpolicy="no-referrer"
                   />
                   <el-button v-if="assetReferenceImages[`location-${loc.id}`]" size="small" text type="danger" @click="delete assetReferenceImages[`location-${loc.id}`]">移除</el-button>
-                  <span v-else class="asset-reference-hint">可选，不上传则按文字提示生成</span>
                 </div>
+                <el-select
+                  v-model="assetReferenceImages[`location-${loc.id}`]"
+                  placeholder="选择场景参考"
+                  clearable
+                  style="width: 100%; margin-top: 8px"
+                >
+                  <el-option
+                    v-for="source in (detail?.locations || []).filter(item => item.id !== loc.id && parseJsonStrArray(item.imageUrls).length)"
+                    :key="source.id"
+                    :label="source.name"
+                    :value="parseJsonStrArray(source.imageUrls)[source.selectedImageIndex || 0]"
+                  />
+                </el-select>
                 <div v-if="parseJsonStrArray(loc.imageUrls).length" class="image-gallery">
                   <el-tooltip
                     v-for="(url, i) in parseJsonStrArray(loc.imageUrls)" :key="i"
@@ -1958,6 +2091,10 @@ onUnmounted(() => {
           <el-button :loading="analyzingAssets" :disabled="!scriptForm.id" @click="handleAnalyzeAssets">
             <el-icon><RefreshRight /></el-icon>重新分析
           </el-button>
+          <label v-if="!storyboardDrafts.length" class="reviewed-plan-upload">
+            {{ importingPlan ? '校验中…' : '导入规划并细化' }}
+            <input type="file" accept="application/json,.json" aria-label="导入人工审阅分镜规划" :disabled="importingPlan || regeneratingStoryboard || !scriptForm.id || composeBusy" @change="handleImportReviewedPlan" />
+          </label>
           <el-button type="primary" :loading="regeneratingStoryboard" :disabled="!scriptForm.id || composeBusy" @click="handleGenerateStoryboard">
             生成分镜
           </el-button>
@@ -1965,7 +2102,7 @@ onUnmounted(() => {
       </section>
 
       <!-- ====== Step 04: Storyboard ====== -->
-      <section v-if="activeStep === 'storyboard' && hasProject" class="form-step-panel storyboard-panel">
+      <section v-if="!generating && !regeneratingStoryboard && activeStep === 'storyboard' && hasProject" class="form-step-panel storyboard-panel">
         <div class="section-head storyboard-section-head" :class="{ collapsed: storyboardToolsCollapsed }">
           <div class="storyboard-section-title">
             <span v-show="!storyboardToolsCollapsed" class="section-kicker">Step 04</span>
@@ -1980,6 +2117,7 @@ onUnmounted(() => {
             </el-form-item>
             <el-button :loading="regeneratingStoryboard" :disabled="!scriptForm.id || composeBusy" @click="handleGenerateStoryboard">重新生成</el-button>
             <el-tooltip :disabled="!!ideaForm.videoModel || storyboardDrafts.length === 0" content="请先选择视频模型">
+              <ShotBatchSelect v-model="videoBatchStart" :total="storyboardDrafts.length" :disabled="generatingAllVideos || composeBusy" /><el-button :loading="generatingAllVideos" :disabled="!ideaForm.videoModel || composeBusy" @click="handleGenerateOpeningVideos">生成本批视频</el-button>
               <el-button :loading="generatingAllVideos" :disabled="!ideaForm.videoModel || storyboardDrafts.length === 0 || composeBusy" @click="handleGenerateAllVideos">
                 一键生成全部视频
               </el-button>
@@ -2003,7 +2141,6 @@ onUnmounted(() => {
                   v-model="composeStoryboardIds"
                   multiple
                   collapse-tags
-                  collapse-tags-tooltip
                   placeholder="选择参与合成的分镜"
                   :disabled="composeBusy"
                 >
@@ -2062,6 +2199,7 @@ onUnmounted(() => {
             </div>
           </div>
 
+          <ReferenceAudio v-if="currentProjectId" :project-id="String(currentProjectId)" />
           <div v-if="narrationDraft" class="narration-panel">
             <div class="narration-heading">
               <strong>旁白内容</strong>
@@ -2109,8 +2247,16 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div v-if="storyboardDrafts.length > 0" class="storyboard-list">
-          <article v-for="item in storyboardDrafts" :key="item.id ?? item.sceneNo" class="storyboard-card">
+        <el-alert v-if="detail?.project?.status === 'script_changed' && storyboardDrafts.length" title="剧本已修改，以下为上一版分镜。请重新分析资产并生成分镜。" type="warning" :closable="false" />
+        <ContinuityReview v-if="storyboardDrafts.length" :shots="storyboardDrafts" @select="selectedShotNo = $event" />
+        <RevisionImport v-if="currentProjectId && storyboardDrafts.length" :project-id="currentProjectId" :shots="storyboardDrafts" :script-text="scriptForm.scriptText || ''" @applied="loadDetail(currentProjectId!)" />
+        <div v-if="storyboardDrafts.length > 0" class="storyboard-workspace">
+          <ShotNavigator :shots="storyboardDrafts" :selected="visibleStoryboards[0]?.sceneNo || 1" @select="selectedShotNo = $event" />
+          <div class="storyboard-list">
+          <article v-for="item in visibleStoryboards" :key="item.id ?? item.sceneNo" class="storyboard-card">
+            <ShotSourceMaterial v-if="currentProjectId && item.id" :project-id="currentProjectId" :storyboard-id="item.id" :continuity-json="item.continuityJson" @uploaded="loadDetail(currentProjectId!)" />
+            <ShotFramePreview v-if="currentProjectId && item.id && !isDirectMaterial(item)" :project-id="currentProjectId" :storyboard-id="item.id" />
+            <div class="shot-pager"><el-button size="small" :disabled="!adjacentShots.before" @click="selectedShotNo = adjacentShots.before!.sceneNo">上一镜</el-button><span>{{ item.sceneNo }} / {{ storyboardDrafts.length }}</span><el-button size="small" :disabled="!adjacentShots.after" @click="selectedShotNo = adjacentShots.after!.sceneNo">下一镜</el-button></div>
             <!-- top bar -->
             <div class="storyboard-card-head">
               <div class="scene-no-badge">镜头 {{ item.sceneNo }}</div>
@@ -2138,6 +2284,8 @@ onUnmounted(() => {
               <el-input v-model="item.locationName" placeholder="场景名" size="small" class="location-name-input" />
             </div>
 
+            <ShotTiming :shot="item" @update="item.continuityJson = $event" />
+            <div class="shot-bridge"><p><strong>上一镜结束：</strong>{{ adjacentShots.before ? continuityOf(adjacentShots.before).end_state : '影片开场' }}</p><p><strong>当前起点：</strong>{{ continuityOf(item).start_state }}</p><p><strong>本镜结果：</strong>{{ continuityOf(item).story_result }}</p></div>
             <!-- Characters in shot -->
             <div v-if="parseJsonField<CharacterRef[]>(item.charactersJson)?.length" class="characters-row">
               <span class="chars-label">角色站位：</span>
@@ -2182,6 +2330,8 @@ onUnmounted(() => {
                   <p v-if="parseJsonField<PhotographyRule>(item.photographyRules)!.lighting">
                     灯光：{{ parseJsonField<PhotographyRule>(item.photographyRules)!.lighting!.direction }} / {{ parseJsonField<PhotographyRule>(item.photographyRules)!.lighting!.quality }}
                   </p>
+                  <p v-if="parseJsonField<PhotographyRule>(item.photographyRules)!.axis">轴线：{{ parseJsonField<PhotographyRule>(item.photographyRules)!.axis }}</p>
+                  <p v-if="parseJsonField<PhotographyRule>(item.photographyRules)!.camera">机位：{{ parseJsonField<PhotographyRule>(item.photographyRules)!.camera }}</p>
                   <p v-if="parseJsonField<PhotographyRule>(item.photographyRules)!.depth_of_field">
                     景深：{{ parseJsonField<PhotographyRule>(item.photographyRules)!.depth_of_field }}
                   </p>
@@ -2225,10 +2375,12 @@ onUnmounted(() => {
               </div>
             </details>
 
+            <details class="rules-detail">
+              <summary>镜头承接信息（可编辑）</summary>
+              <el-input v-model="item.continuityJson" type="textarea" :autosize="{ minRows: 5, maxRows: 12 }" aria-label="镜头承接信息" />
+            </details>
             <!-- Source text -->
-            <p v-if="item.sourceText" class="source-text-ref">
-              原文：{{ item.sourceText }}
-            </p>
+            <details class="rules-detail"><summary>本镜剧本与台词（可编辑）</summary><el-input v-model="item.sourceText" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" aria-label="本镜剧本与台词" /></details>
 
             <!-- Reference Images -->
             <div v-if="getStoryboardRefImages(item).charImgs.length || getStoryboardRefImages(item).locImg" class="storyboard-ref-images">
@@ -2244,7 +2396,8 @@ onUnmounted(() => {
             <!-- Video -->
             <div v-if="item.videoUrl && item.videoStatus === 'done'" class="video-download-bar">
               <span class="video-done-label">视频已生成</span>
-              <a :href="item.videoUrl" target="_blank" rel="noopener noreferrer" class="video-download-btn">
+              <LocalVideoPreview v-if="item.videoUrl.startsWith('/short-drama/')" :src="item.videoUrl" />
+              <a v-else :href="item.videoUrl" target="_blank" rel="noopener noreferrer" class="video-download-btn">
                 <el-button size="small" type="success" plain>下载视频</el-button>
               </a>
             </div>
@@ -2272,15 +2425,18 @@ onUnmounted(() => {
                 >
                   重试生成
                 </el-button>
+                <el-tag v-else-if="isDirectMaterial(item)" size="small">真实素材插入</el-tag>
                 <el-tooltip v-else :disabled="!!ideaForm.videoModel && item.videoStatus !== 'generating'" :content="!ideaForm.videoModel ? '请先选择视频模型' : '正在生成中'">
                   <el-button size="small" type="primary" :loading="generatingVideo[item.id ?? '']" :disabled="item.videoStatus === 'generating' || !ideaForm.videoModel || composeBusy" @click="handleGenerateVideo(item)">
                     {{ item.videoStatus === 'done' ? '重新生成视频' : '生成视频' }}
                   </el-button>
                 </el-tooltip>
+                <RevisedVideoUpload v-if="currentProjectId && item.id" :project-id="currentProjectId" :storyboard-id="item.id" :video-id="item.videoId" :disabled="composeBusy || item.videoStatus === 'generating'" @uploaded="loadDetail(currentProjectId!)" />
                 <el-button size="small" :loading="savingStoryboard" :disabled="composeBusy || savingStoryboard" @click="handleSaveStoryboard(item)">保存镜头</el-button>
               </div>
             </div>
           </article>
+          </div>
         </div>
         <el-empty v-else description="还没有分镜，请先在资产配置步骤生成分镜" />
         <div class="step-actions">
@@ -2292,6 +2448,8 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
+.reviewed-plan-upload{display:inline-flex;align-items:center;padding:7px 12px;border:1px solid #dcdfe6;border-radius:4px;background:white;font-size:13px;cursor:pointer}.reviewed-plan-upload input{display:none}.reviewed-plan-upload:has(input:disabled){opacity:.5;cursor:wait}
+
 .short-drama-page {
   box-sizing: border-box;
   display: grid;
@@ -2339,9 +2497,9 @@ p { margin-top: 6px; font-size: 13px; line-height: 1.65; color: #6b7280; }
 .project-title { overflow: hidden; font-size: 14px; font-weight: 700; color: #242a33; text-overflow: ellipsis; white-space: nowrap; }
 .project-desc { display: -webkit-box; overflow: hidden; font-size: 12px; line-height: 1.5; color: #6f7785; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .project-row, .storyboard-bottom { display: flex; align-items: center; justify-content: space-between; }
-.project-row { font-size: 12px; em { font-style: normal; color: rgb(0 0 0 / 45%); } small { color: var(--el-color-danger); } }
+.project-row { gap:8px; font-size: 12px; small { white-space:nowrap; flex-shrink:0; } em { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style: normal; color: rgb(0 0 0 / 45%); } small { color: var(--el-color-danger); } }
 
-.workspace { display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 14px; height: 100%; min-width: 0; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; }
+.workspace { display: flex; flex-direction: column; gap: 14px; height: 100%; min-width: 0; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; }
 .hero-panel, .form-step-panel { padding: 18px 20px; }
 .hero-panel {
   min-height: 82px; position: relative; overflow: hidden;
@@ -2352,12 +2510,12 @@ p { margin-top: 6px; font-size: 13px; line-height: 1.65; color: #6b7280; }
 .hero-copy { display: grid; gap: 8px; max-width: 760px; position: relative; z-index: 1; }
 
 .section-kicker { font-size: 12px; font-weight: 700; line-height: 1.3; color: #2563eb; text-transform: uppercase; }
-.section-head-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.image-model-inline { display: flex; align-items: center; gap: 8px; }
+.section-head-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-width: 0; max-width: 100%; }
+.image-model-inline { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; max-width: 100%; }
 .image-model-label { font-size: 12px; font-weight: 600; color: #4a5568; white-space: nowrap; }
 .form-hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
 
-.step-panel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; padding: 0; overflow: hidden; background: #fff; }
+.step-panel { flex-shrink: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; padding: 0; overflow: hidden; background: #fff; }
 
 .step-item {
   position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 10px; min-height: 64px;
@@ -2374,7 +2532,7 @@ p { margin-top: 6px; font-size: 13px; line-height: 1.65; color: #6b7280; }
 .step-item.active span { color: #fff; background: linear-gradient(145deg, #2563eb, #38bdf8); border-color: #2563eb; box-shadow: 0 6px 14px rgb(37 99 235 / 20%); }
 .step-item.completed:not(.active) span { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
 
-.form-step-panel { display: grid; gap: 16px; align-content: start; width: 100%; min-height: 0; overflow: hidden auto; }
+.form-step-panel { display: grid; gap: 16px; align-content: start; width: 100%; min-height: auto; overflow: visible; flex: 0 0 auto; }
 .idea-step { min-height: 0; overflow: visible; &.expanded { box-shadow: 0 18px 42px rgb(32 36 43 / 7%); } }
 .creator-form { display: grid; gap: 13px; min-width: 0; min-height: 0; overflow: visible; }
 .idea-field { min-height: 0; margin-bottom: 0; :deep(.el-textarea__inner) { height: clamp(160px, 26vh, 300px); min-height: 160px !important; } }
@@ -2388,8 +2546,8 @@ p { margin-top: 6px; font-size: 13px; line-height: 1.65; color: #6b7280; }
 .creator-actions :deep(.el-button) { flex-shrink: 0; min-width: 118px; height: 38px; }
 
 // ---- SSE Progress ----
-.sse-progress-panel { display: flex; justify-content: center; padding: 20px 24px; }
-.sse-progress-card { width: 100%; max-width: 720px; padding: 24px 28px; text-align: center; background: #fff; border: 1px solid #e4e9f1; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.06); }
+.sse-progress-panel { flex: 0 0 auto; min-width: 0; padding: 4px; }
+.sse-progress-card { width: 100%; max-width: none; padding: 24px; text-align: center; background: #fff; border: 1px solid #e4e9f1; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.06); }
 .sse-spinner { color: #2563eb; animation: sseSpin 1.4s linear infinite; margin-bottom: 6px; }
 @keyframes sseSpin { to { transform: rotate(360deg); } }
 .sse-msg { margin: 4px 0 12px; color: #7f8b9a; font-size: 13px; }
@@ -2514,19 +2672,14 @@ p { margin-top: 6px; font-size: 13px; line-height: 1.65; color: #6b7280; }
 
 // ---- Storyboard ----
 // 分镜面板：标题与合成工具条固定在顶部，列表区独立滚动并占满剩余高度
-.form-step-panel.storyboard-panel {
-  grid-template-rows: auto auto minmax(0, 1fr);
-  align-content: stretch;
-  overflow: hidden;
-  > .storyboard-list {
-    min-height: 0;
-    overflow: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-    padding-right: 6px;
-  }
-}
-.storyboard-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 18px; }
+.form-step-panel.storyboard-panel { display: flex; flex-direction: column; gap: 12px; overflow: visible; }
+.workspace.review-workspace { display: flex; }
+.storyboard-workspace { display: grid; grid-template-columns: 205px minmax(0, 1fr); gap: 16px; align-items: start; }
+.storyboard-list { display: grid; gap: 16px; margin: 0; overflow: visible; }
+.shot-pager { display: flex; gap: 12px; align-items: center; justify-content: space-between; color: #52647b; font-size: 12px; }
+.shot-bridge { padding: 12px; border-left: 3px solid #94a9c5; background: #f1f5f9; font-size: 12px; line-height: 1.7; color: #36465c; }.shot-bridge p { margin: 0 0 6px; }
+@media(max-width:1000px) { .short-drama-page { grid-template-columns: 190px minmax(0,1fr); }.storyboard-workspace { grid-template-columns: 165px minmax(0,1fr); } }
+@media(max-width:1100px) { .storyboard-workspace { grid-template-columns: minmax(0,1fr); } }
 .storyboard-card { min-width: 0; align-content: start; padding: 18px; background: #fbfcfd; border: 1px solid #e5e7eb; border-radius: 8px; display: grid; gap: 12px; }
 .storyboard-card-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
 .scene-no-badge { font-size: 14px; font-weight: 750; color: #242a33; }
@@ -2610,21 +2763,25 @@ p { margin-top: 6px; font-size: 13px; line-height: 1.65; color: #6b7280; }
 :deep(.el-button .el-icon) { margin-right: 4px; }
 
 @media (width <= 1100px) {
-  .short-drama-page, .advanced-options, .script-meta, .scene-meta-row { grid-template-columns: 1fr; }
-  .project-sidebar { height: auto; max-height: 280px; }
-  .step-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .advanced-options, .script-meta, .scene-meta-row { grid-template-columns: 1fr; }
+  .short-drama-page { grid-template-columns: 180px minmax(0,1fr); }
+  .project-sidebar { height: 100%; }
+  .step-panel { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .step-item { padding: 10px; gap: 6px; } .step-item small { display: none; } .step-item span { grid-row: auto; }
   .step-item:nth-child(2n) { border-right: 0; }
   .composition-toolbar-main { grid-template-columns: 1fr; }
   .composition-controls { justify-content: flex-start; }
   .narration-panel { grid-template-columns: 1fr; }
 }
 @media (width <= 640px) {
-  .short-drama-page { height: calc(100vh - var(--header-container-default-heigth)); gap: 12px; padding: 12px; }
+  .short-drama-page { grid-template-columns: minmax(0,1fr); grid-template-rows: auto minmax(0,1fr); height: calc(100vh - var(--header-container-default-heigth)); gap: 10px; padding: 10px; }
+  .project-sidebar { max-height: 112px; } .sidebar-head { display: none; } .project-list { display: flex; padding: 8px; overflow-x: auto; } .project-item { flex: 0 0 190px; } .project-desc { display: none; }
   .workspace { padding-right: 0; }
   .hero-panel { min-height: auto; }
   .section-head { flex-direction: column; }
   h1 { font-size: 26px; }
-  .step-panel { grid-template-columns: 1fr; }
+  .step-panel { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  .step-item { display:flex; flex-direction:column; align-items:center; } .step-item strong { font-size:12px; }
   .step-item { border-right: 0; border-bottom: 1px solid #edf0f3; &:last-child { border-bottom: 0; } }
   .form-step-panel { padding: 16px; }
   .creator-actions, .step-actions { align-items: stretch; :deep(.el-button) { width: 100%; margin-left: 0; } }
@@ -2641,7 +2798,8 @@ p { margin-top: 6px; font-size: 13px; line-height: 1.65; color: #6b7280; }
 .video-failed-hint { font-size: 11px; color: #b45309; }
 .composition-clip-select { min-width: 240px; }
 .composition-clip-select :deep(.el-select) { width: 100%; }
+.generation-error { flex:0 0 auto; color:#b42318; border:1px solid #fecdca; border-radius:8px; padding:12px 16px; background:#fff5f5; font-size:13px; }.generation-error summary { cursor:pointer; }.generation-error p { white-space:normal; overflow-wrap:anywhere; color:inherit; }
+.section-head-actions :deep(.el-select) { max-width:100%; }
+.location-image-section > :deep(.el-select) { display:block; margin-bottom:12px; }
+.storyboard-card-head, .scene-tags { flex-wrap:wrap; gap:8px; }
 </style>
-
-
-

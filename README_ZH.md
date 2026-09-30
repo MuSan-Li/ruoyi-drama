@@ -1,5 +1,11 @@
 # ruoyi-drama
 
+剧本审阅、分场规划和镜头承接检查见 [剧情连贯性工作流](docs/continuity-workflow.md)。
+
+时长预算、摄影规则与真实项目修订验证见 [第二轮审阅与理论依据](docs/second-review.md)。
+
+道具、逐镜关键帧、2.5 模型与断点恢复见 [镜头资产工作流](docs/visual-assets.md)。
+
 **[English](README.md)**
 
 > **后端服务**（短剧前端依赖此前端运行的后台）：

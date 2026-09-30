@@ -19,6 +19,10 @@ type ApiPayload<T> = T | { data?: T; rows?: T };
 
 const IMAGE_GENERATION_TIMEOUT = 5 * 60 * 1000;
 
+export function applyShortDramaRevision(projectId: SnowflakeId, revision: Record<string, any>) {
+  return unwrap(post<ShortDramaDetail>(`/short-drama/${projectId}/revision`, revision).json());
+}
+
 async function unwrap<T>(request: Promise<ApiPayload<T>>): Promise<T> {
   const response = await request;
   if (response && typeof response === 'object') {
@@ -60,14 +64,14 @@ export function saveShortDramaScript(data: ShortDramaScript) {
 }
 
 /** Phase 1: 剧本打磨 */
-export function polishScript(projectId: SnowflakeId) {
-  return unwrap(post<ShortDramaDetail>(`/short-drama/${projectId}/polish-script`).json());
+export function polishScript(projectId: SnowflakeId, model?: string) {
+  return unwrap(post<ShortDramaDetail>(`/short-drama/${projectId}/polish-script${model ? `?model=${encodeURIComponent(model)}` : ''}`).json());
 }
 
 /** Phase 2: 资产分析 */
-export function analyzeAssets(projectId: SnowflakeId, scriptId: SnowflakeId) {
+export function analyzeAssets(projectId: SnowflakeId, scriptId: SnowflakeId, model?: string) {
   return unwrap(post<ShortDramaDetail>(
-    `/short-drama/${projectId}/analyze-assets?scriptId=${scriptId}`,
+    `/short-drama/${projectId}/analyze-assets?scriptId=${scriptId}${model ? `&model=${encodeURIComponent(model)}` : ''}`,
   ).json());
 }
 
