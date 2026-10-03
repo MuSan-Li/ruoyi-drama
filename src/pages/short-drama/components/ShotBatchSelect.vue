@@ -12,5 +12,5 @@ const batches = computed(() => Array.from({ length: Math.ceil(props.total / 10) 
   </select>
 </template>
 <style scoped>
-select { max-width:100%; padding:7px 10px; border:1px solid #d4dfed; border-radius:6px; background:white; color:#334155; font:inherit; font-size:13px; }
+select { max-width:100%; }
 </style>

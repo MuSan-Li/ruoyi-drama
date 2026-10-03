@@ -1,0 +1,4 @@
+interface:
+  display_name: "短剧资产审美"
+  short_description: "改善古代服饰器物人物造型与场景材质，并维护可核实参考和审图规则"
+  default_prompt: "使用 $short-drama-asset-aesthetics 为当前短剧制定资产造型标准、编写图片提示词并审阅候选。"

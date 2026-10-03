@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-01",
+  "purpose": "古代服饰、器物、人物与场景审美的长期参考；来源链接和原创观察，不收录原图/模型/第三方技能全文",
+  "defaultReuse": "link_and_original_observation_only",
+  "sources": [
+    {
+      "id": "npm-ming-rank-badge",
+      "title": "明中叶 蓝地织金狮纹方补",
+      "url": "https://south.npm.gov.tw/SelectionsDetailC004100.aspx?Cond=dbcee5af-d934-4d50-8cc3-039edfea36ec",
+      "category": "服饰形制/官服身份",
+      "sourceNature": "官方博物馆实物与馆方解释；一级参考",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "全文网页已读取；不是只读搜索摘要",
+      "licenseVerification": {"status": "image_reuse_not_verified", "observed": "网页标注版权所有并提供出版与图像授权入口", "reuse": "仅链接和原创概括，未下载图像"},
+      "reusableObservations": ["常朝视事常服由团领衫、乌纱帽、束带组成", "明代方补可作为胸背位置与相对尺度参考，织绣与袍面结合", "文官禽鸟与武官走兽应分开"],
+      "limits": ["对象为明中叶高阶武官/仪宾狮纹，不能直接当七品县令纹样", "不能证明晚明鲁西南县令的所有日常细节"]
+    },
+    {
+      "id": "dpm-ming-official-dress",
+      "title": "明代官员服饰研究",
+      "url": "https://www.dpm.org.cn/Uploads/File/2019/11/25/u5ddbb3f9e989e.pdf",
+      "category": "服饰制度/帽型",
+      "sourceNature": "故宫发布学术研究；制度解释参考",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "搜索系统返回较长正文片段；直接 PDF 打开多次超时，未完整阅读全文",
+      "licenseVerification": {"status": "not_verified", "reuse": "仅原始链接与有限原创摘要，不转存全文"},
+      "reusableObservations": ["朝服、公服、常服、赐服需按场合区分", "片段描述乌纱帽前低后高、两旁有翅", "圆领长袍与常服补子有制度关系"],
+      "limits": ["未全文复核，不能给出唯一裁片尺寸或所有年代帽翅角度", "品色与常服补子不能机械合并"]
+    },
+    {
+      "id": "dpm-belt-plaque",
+      "title": "带板",
+      "url": "https://www.dpm.org.cn/lemmas/239465.html",
+      "category": "服饰身份/腰带材料",
+      "sourceNature": "官方博物馆术语条目",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "已核查搜索摘要；直接条目读取失败",
+      "licenseVerification": {"status": "not_verified", "reuse": "仅链接和有限观察"},
+      "reusableObservations": ["1393 年公服带板等级的六、七品银质制度线索", "普通县令不应直接套帝王玉带或大金饰"],
+      "limits": ["制度针对公服，不能无条件推广所有常服带制", "带板数量/尺寸及 1639 年实际地方穿用未核实"]
+    },
+    {
+      "id": "dpm-ming-chair",
+      "title": "黄花梨木四出头官帽椅",
+      "url": "https://www.dpm.org.cn/collection/gear/229330.html",
+      "category": "家具结构/材质层级",
+      "sourceNature": "官方博物馆明代馆藏实物描述；一级参考",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "全文藏品页已读取",
+      "licenseVerification": {"status": "image_reuse_not_verified", "reuse": "只链接与原创结构提炼，不转存原图"},
+      "reusableObservations": ["搭脑与扶手出头、后弯靠背、藤屉、圆腿和管脚枨", "简洁无繁雕也可以有精致结构和体量"],
+      "limits": ["馆藏为高档黄花梨及清宫旧藏，不等于贫县常见物", "本剧只能借结构，普通木材替换属于美术设计"]
+    },
+    {
+      "id": "nmc-nanjing-scroll",
+      "title": "《南都繁会图》卷",
+      "url": "https://www.chnmuseum.cn/zp/zpml/csp/202010/t20201028_247938.shtml",
+      "category": "明代市街/职业层级/配色",
+      "sourceNature": "官方博物馆馆藏解释；一级参考",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "全文网页已读取",
+      "licenseVerification": {"status": "image_reuse_not_verified", "observed": "页尾中国国家博物馆版权所有", "reuse": "仅原始链接与原创观察，不下载画卷"},
+      "reusableObservations": ["职业和店铺不同，招幌、摊位和行动位置应有功能", "明代都市衣饰存在鲜明颜色，不能把古代等同全灰黑", "可学街巷层次和人群分布"],
+      "limits": ["南京繁华都市不等于鲁西南贫县", "馆方认为并非仇英作品，不能误署作者", "绘画表现不等于每条服饰规范都被遵守"]
+    },
+    {
+      "id": "nmc-xuande-bronze",
+      "title": "宣德云纹铜熏炉",
+      "url": "https://www.chnmuseum.cn/zp/zpml/csp/202008/t20200826_247450.shtml",
+      "category": "金属器物/铜质光色",
+      "sourceNature": "官方博物馆传世品解释；一级参考",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "全文网页已读取",
+      "licenseVerification": {"status": "image_reuse_not_verified", "observed": "页尾版权所有", "reuse": "链接和原创材料观察"},
+      "reusableObservations": ["铜器可有深褐等沉稳表面，不必全是亮金", "器型、用途、体量应共同决定外观"],
+      "limits": ["精工礼器/熏炉不等于普通油灯和农家用器", "不据此给普通工坊增加宣德珍品"]
+    },
+    {
+      "id": "npm-qiu-ying-clothing-paper",
+      "title": "台北故宫学术 PDF（传明仇英清明上河图服饰插图）",
+      "url": "https://theme.npm.edu.tw/Academic/ChineseArtDownload.ashx?bid=6048&eid=0",
+      "category": "市街人物/民间帽服（待深读）",
+      "sourceNature": "官方博物馆学术出版资源",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "曾返回 16 页 PDF 和图注；后续正文读取超时，未作完整服装研究",
+      "licenseVerification": {"status": "not_verified", "reuse": "暂只保留链接"},
+      "reusableObservations": ["可作为后续按图像时代与版本核对平民帽服的线索"],
+      "limits": ["不要把宋代张择端本、传明仇英本、1736 年清院本混用", "尚未核清论文标题/裁片细节，不作为本次生成的具体史实依据"]
+    },
+    {
+      "id": "github-unity-toonshader",
+      "title": "Unity-Technologies/com.unity.toonshader",
+      "url": "https://github.com/Unity-Technologies/com.unity.toonshader",
+      "category": "三维卡通渲染/光色分层",
+      "sourceNature": "作者为 Unity 官方的原始 GitHub 仓库及文档",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "仓库 README 和 LICENSE.md 已读取",
+      "licenseVerification": {"status": "verified_scoped", "licenseUrl": "https://github.com/Unity-Technologies/com.unity.toonshader/blob/master/LICENSE.md", "observed": "源代码 Unity Companion License，用于 Unity-dependent projects；Unity-chan 示例另有 Unity-Chan License", "reuse": "本次只借光色组织思路和链接，未复制代码/纹理/示例人物"},
+      "reusableObservations": ["基础色、一级阴影、二级阴影分别指定", "角色材质是否接受灯光颜色可以明确控制", "高光、边缘光等应有独立作用"],
+      "limits": ["并非明代服饰证据", "许可并非通用 MIT；示例人物不能因仓库公开而任意商用", "渲染技术只转译为审美要求，不等于图像模型执行真实着色器"]
+    },
+    {
+      "id": "github-nilocat-toon-example",
+      "title": "ColinLeung-NiloCat/UnityURPToonLitShaderExample",
+      "url": "https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample",
+      "category": "三维卡通渲染/轮廓/明暗可读性",
+      "sourceNature": "原始作者 GitHub 仓库和原始 README",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "仓库及 raw README/LICENSE 已读取",
+      "licenseVerification": {"status": "verified_scoped", "licenseUrl": "https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample/blob/master/LICENSE", "observed": "学习用 shader 示例 MIT；README 展示的商业 NiloToonURP 完整版与样例资产不能据此自动认定 MIT", "reuse": "仅链接、原创提炼，不复制示例图像/人物/代码"},
+      "reusableObservations": ["用可读的明暗和轮廓保持角色与背景分离", "环境光最暗色避免脸部整块死黑", "区分渲染学习示例与完整商业产品"],
+      "limits": ["不提供中国古代服饰考据", "README 多数效果图属于完整版展示，不能承诺本开源示例拥有同等全部能力"]
+    },
+    {
+      "id": "github-jtrp",
+      "title": "JasonMa0012/JTRP",
+      "url": "https://github.com/JasonMa0012/JTRP/blob/master/README.md",
+      "category": "人物脸发材质/影视卡通 CG",
+      "sourceNature": "原作者 GitHub 仓库及参数说明",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "README 全文与 LICENSE 已读取",
+      "licenseVerification": {"status": "verified_scoped", "licenseUrl": "https://github.com/JasonMa0012/JTRP/blob/master/LICENSE", "observed": "仓库 LICENSE 为 MIT；项目基于 UTS，引用的模型/第三方插件需分别核验", "reuse": "只借面部/头发/环境光分别处理的方法，不下载或运行第三方代码/样本"},
+      "reusableObservations": ["脸和头发可有不同阴影规则", "头发大形、高光和面部阴影分别组织", "角色展示与完整场景中的透视处理要区别"],
+      "limits": ["不等于下载角色模型的许可", "非服饰史来源", "部分功能文档注明不完整或旧版失效，不用于承诺部署能力"]
+    },
+    {
+      "id": "cafa-late-ming-portraits",
+      "title": "黄小峰：紫禁城的黎明——晚明的帝京景观与官僚肖像",
+      "url": "https://cafa.com.cn/cn/figures/article/details/8329584",
+      "category": "晚明官服/公服品色（待深读）",
+      "sourceNature": "中央美术学院发布专家研究介绍；作者观点的原始机构来源",
+      "checkedAt": "2026-10-01",
+      "accessEvidence": "检索摘要提及按《大明会典》七品公服为青色；正文打开超时",
+      "licenseVerification": {"status": "not_verified", "reuse": "只保留链接与待核查线索"},
+      "reusableObservations": ["核对官僚肖像时区分公服与常服，不把现代影视配色当唯一史实"],
+      "limits": ["本次不是全文读取，不作为精确尺寸或全部常服颜色依据"]
+    }
+  ],
+  "notCollected": [
+    {"category": "GitHub 汉服文档转载仓库", "reason": "发现转载文本与观点争论，但授权及考据等级不明确；未抄第三方全文或安装 skill"},
+    {"category": "商业角色模型/影视画面下载", "reason": "本次只需原始观察与原创造型，不导入版权不明模型或付费素材"}
+  ],
+  "maintenanceRule": "新增资料必须指出改变了哪个具体美术判断；保留访问失败/摘要状态，后续核实再升级证据等级。"
+}

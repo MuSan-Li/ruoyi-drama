@@ -1,0 +1,9 @@
+{
+  "name": "smy-seedance-storyboard",
+  "title": "上美影动画 · 故事与分镜",
+  "type": "director",
+  "description": "上美影故事改编、单剧色盘、二维动作与反应、参考映射和尾帧承接；使用项目连续导演稿、可选首帧与实际媒体接口。",
+  "enabled": true,
+  "artStyle": "",
+  "files": ["references/project-adaptation.md", "references/dialogue-sample-lessons.md"]
+}

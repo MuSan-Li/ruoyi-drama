@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage } from '@/utils/message';
 import { applyShortDramaRevision } from '@/api/shortDrama';
 import type { ShortDramaStoryboard } from '@/api/shortDrama/types';
 import { reviewShot } from '../shotReview';

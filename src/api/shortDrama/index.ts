@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/utils/authenticatedFetch';
 ﻿import type {
   ShortDramaAudio,
   ShortDramaCharacter,
@@ -6,6 +7,7 @@
   ShortDramaComposeVideoResult,
   ShortDramaDetail,
   ShortDramaIdea,
+  ShortDramaImageRevision,
   ShortDramaLocation,
   SnowflakeId,
   ShortDramaProject,
@@ -14,10 +16,18 @@
 } from './types';
 import { del, get, post, put } from '@/utils/request';
 import { useUserStore } from '@/stores';
+import type { PlanningReceipt } from '@/utils/storyboardPlanningProgress';
 
 type ApiPayload<T> = T | { data?: T; rows?: T };
 
 const IMAGE_GENERATION_TIMEOUT = 5 * 60 * 1000;
+
+export function getStoryboardPlanningStatus(projectId: SnowflakeId, scriptId: SnowflakeId, requestId?: string) {
+  return unwrap(get<PlanningReceipt>(`/short-drama/${projectId}/plan-storyboard/status?scriptId=${scriptId}${requestId ? `&requestId=${encodeURIComponent(requestId)}` : ''}`).json());
+}
+export function getAssetAnalysisStatus(projectId: SnowflakeId, scriptId: SnowflakeId, requestId?: string) {
+  return unwrap(get<PlanningReceipt>(`/short-drama/${projectId}/analyze-assets/status?scriptId=${scriptId}${requestId ? `&requestId=${encodeURIComponent(requestId)}` : ''}`).json());
+}
 
 export function applyShortDramaRevision(projectId: SnowflakeId, revision: Record<string, any>) {
   return unwrap(post<ShortDramaDetail>(`/short-drama/${projectId}/revision`, revision).json());
@@ -63,15 +73,16 @@ export function saveShortDramaScript(data: ShortDramaScript) {
   return unwrap(post<ShortDramaScript>('/short-drama/script', data).json());
 }
 
-/** Phase 1: 剧本打磨 */
-export function polishScript(projectId: SnowflakeId, model?: string) {
-  return unwrap(post<ShortDramaDetail>(`/short-drama/${projectId}/polish-script${model ? `?model=${encodeURIComponent(model)}` : ''}`).json());
+/** 按修改意见重新生成固定格式剧本 */
+export function polishScript(projectId: SnowflakeId, instruction: string) {
+  return unwrap(post<ShortDramaDetail>(`/short-drama/${projectId}/polish-script`, { instruction }, { timeout: 600000 }).json());
 }
 
 /** Phase 2: 资产分析 */
 export function analyzeAssets(projectId: SnowflakeId, scriptId: SnowflakeId, model?: string) {
   return unwrap(post<ShortDramaDetail>(
     `/short-drama/${projectId}/analyze-assets?scriptId=${scriptId}${model ? `&model=${encodeURIComponent(model)}` : ''}`,
+    undefined, { timeout: 600000 },
   ).json());
 }
 
@@ -102,13 +113,28 @@ export function generateStoryboards(projectId: SnowflakeId, scriptId: SnowflakeI
   ).json());
 }
 
+export function addShortDramaStoryboard(projectId: SnowflakeId, scriptId: SnowflakeId, afterId?: SnowflakeId) {
+  const params = new URLSearchParams({ projectId: String(projectId), scriptId: String(scriptId) });
+  if (afterId) params.set('afterId', String(afterId));
+  return unwrap(post<ShortDramaStoryboard>(`/short-drama/storyboard/add?${params}`).json());
+}
+
+export function deleteShortDramaStoryboard(id: SnowflakeId) {
+  return unwrap(del<void>(`/short-drama/storyboard/${id}`).json());
+}
+
 export function saveShortDramaStoryboard(data: ShortDramaStoryboard) {
   return unwrap(post<ShortDramaStoryboard>('/short-drama/storyboard', data).json());
 }
 
-export function generateStoryboardVideo(storyboardId: SnowflakeId, model: string) {
+export function generateStoryboardVideo(
+  storyboardId: SnowflakeId,
+  model: string,
+  options: { requestId: string; regenerate?: boolean },
+) {
+  const params = new URLSearchParams({ model, requestId: options.requestId, regenerate: String(options.regenerate === true) });
   return unwrap(post<ShortDramaStoryboard>(
-    `/short-drama/storyboard/${storyboardId}/generate-video?model=${encodeURIComponent(model)}`,
+    `/short-drama/storyboard/${storyboardId}/generate-video?${params}`,
   ).json());
 }
 
@@ -118,9 +144,37 @@ export function retrieveStoryboardVideo(storyboardId: SnowflakeId, model: string
   ).json());
 }
 
-export function generateAllVideos(projectId: SnowflakeId, model: string) {
+export interface ShortDramaVideoSubmission {
+  requestId: string;
+  storyboardId: SnowflakeId;
+  projectId: SnowflakeId;
+  parametersHash: string;
+  requestedModel: string;
+  actualModel: string;
+  providerCode: string;
+  predictionId?: string;
+  videoUrl?: string;
+  lastFrameUrl?: string;
+  status: string;
+  createdAt: number;
+  updatedAt: number;
+  error?: string;
+}
+
+export function getStoryboardVideoSubmission(storyboardId: SnowflakeId, requestId: string) {
+  return unwrap<ShortDramaVideoSubmission | null>(get<ShortDramaVideoSubmission | null>(
+    `/short-drama/storyboard/${storyboardId}/video-submissions/${encodeURIComponent(requestId)}?_t=${Date.now()}`,
+  ).json());
+}
+
+export function generateAllVideos(projectId: SnowflakeId, model: string, range?: { sceneStart: number; sceneCount: number }) {
+  const params = new URLSearchParams({ model });
+  if (range) {
+    params.set('sceneStart', String(range.sceneStart));
+    params.set('sceneCount', String(range.sceneCount));
+  }
   return unwrap(post<ShortDramaStoryboard[]>(
-    `/short-drama/${projectId}/generate-all-videos?model=${encodeURIComponent(model)}`,
+    `/short-drama/${projectId}/generate-all-videos?${params}`,
   ).json());
 }
 
@@ -141,7 +195,7 @@ export async function getShortDramaComposeStatus(projectId: SnowflakeId) {
 export async function downloadShortDramaVideo(projectId: SnowflakeId) {
   const userStore = useUserStore();
   const apiBase = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-  const response = await fetch(`${apiBase}/short-drama/${projectId}/compose-video/download`, {
+  const response = await authenticatedFetch(`${apiBase}/short-drama/${projectId}/compose-video/download`, {
     headers: {
       authorization: `Bearer ${userStore.token}`,
       ClientID: import.meta.env.VITE_CLIENT_ID,
@@ -275,10 +329,10 @@ export interface PredictionResponse {
   url?: string;
 }
 
-export function startImageGeneration(assetType: string, assetId: SnowflakeId, model: string, referenceImageUrl?: string) {
+export function startImageGeneration(assetType: string, assetId: SnowflakeId, model: string, referenceImageUrl?: string, revision?: ShortDramaImageRevision) {
   return unwrap(post<PredictionResponse>(
     `/short-drama/image/start?assetType=${assetType}&assetId=${assetId}&model=${encodeURIComponent(model)}${referenceImageQuery(referenceImageUrl)}`,
-    {},
+    revision || {},
     { timeout: IMAGE_GENERATION_TIMEOUT },
   ).json());
 }
@@ -289,7 +343,7 @@ export async function uploadReferenceImage(file: File, model: string): Promise<s
   const apiBase = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
   const formData = new FormData();
   formData.append('file', file);
-  const response = await fetch(`${apiBase}/short-drama/image/upload-reference?model=${encodeURIComponent(model)}`, {
+  const response = await authenticatedFetch(`${apiBase}/short-drama/image/upload-reference?model=${encodeURIComponent(model)}`, {
     method: 'POST',
     headers: {
       authorization: `Bearer ${userStore.token}`,

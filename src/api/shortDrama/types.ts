@@ -1,12 +1,21 @@
 ﻿export type SnowflakeId = string;
 
+/** Omission preserves approved identity/wardrobe continuity. Explicit edits save an unselected candidate. */
+export interface ShortDramaImageRevision {
+  referencePurpose?: 'identity' | 'identity_revision';
+  revisionRequirements?: string;
+}
+
 export interface ShortDramaProject {
   id?: SnowflakeId;
   userId?: SnowflakeId;
   projectName: string;
   description?: string;
+  originalIdea?: string;
   status?: string;
   artStyle?: string;
+  aestheticSkillName?: string;
+  directorSkillName?: string;
   composeAspectRatio?: ShortDramaAspectRatio;
   createTime?: string;
   updateTime?: string;
@@ -151,9 +160,32 @@ export interface ShortDramaAudio {
 }
 
 export interface ShortDramaIdea {
+  aestheticSkillName?: string;
+  directorSkillName?: string;
   idea: string;
   model: string;
   projectName?: string;
   artStyle?: string;
-  aspectRatio?: ShortDramaAspectRatio;
+}
+
+export type ShortDramaSkillType = 'aesthetic' | 'director';
+
+export interface ShortDramaSkill {
+  name: string;
+  title: string;
+  type: ShortDramaSkillType;
+  description: string;
+  enabled: boolean;
+  artStyle?: string;
+  version: string;
+}
+
+export interface ShortDramaSkillFile {
+  path: string;
+  content: string;
+}
+
+export interface ShortDramaSkillDetail extends ShortDramaSkill {
+  body: string;
+  files: ShortDramaSkillFile[];
 }

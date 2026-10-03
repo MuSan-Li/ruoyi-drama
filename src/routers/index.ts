@@ -38,7 +38,7 @@ router.beforeEach((to) => {
   const userStore = useUserStore();
   const titleKey = typeof to.meta.title === 'string' ? to.meta.title : '';
   const title = titleKey ? i18n.global.t(titleKey) : '';
-  // 页面标题后缀走 locale key；VITE_WEB_TITLE 仅作后台/品牌引用，不再承担 UI 本地化
+  // 页面标题及品牌后缀统一使用当前语言。
   const webTitle = i18n.global.t('common.webTitle');
   document.title = title ? `${title} - ${webTitle}` : webTitle;
 

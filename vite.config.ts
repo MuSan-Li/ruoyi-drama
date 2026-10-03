@@ -38,13 +38,6 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          additionalData: '',
-        },
-      },
-    },
     server: {
       headers: {
         'Cache-Control': 'no-store',

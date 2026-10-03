@@ -7,6 +7,7 @@ export default {
   common: {
     webTitle: 'AI 短剧创作',
     requestFailed: '请求失败',
+    loginRequired: '请先登录',
     time: {
       justNow: '刚刚更新',
       minutesAgo: '{n} 分钟前',
@@ -132,8 +133,9 @@ export default {
     keyConfig: {
       entry: 'Key 配置',
       dialogTitle: '一键配置 Atlas Key',
-      tip: '填入你的 Atlas Cloud API Key，将批量应用到所有 Atlas 模型（图片 / 视频）。可在 atlascloud.ai 获取。',
-      warning: '提交后会覆盖当前所有 Atlas 模型的 Key，请确认无误。',
+      tip: '填写 Key，统一应用到所有 Atlas 模型。',
+      getKey: '官网获取',
+      warning: '保存将覆盖现有 Atlas Key。',
       label: 'Atlas API Key',
       placeholder: '粘贴你的 Atlas Cloud API Key',
       cancel: '取消',
@@ -146,7 +148,15 @@ export default {
       atlasKeyRequired: '请输入 Atlas Cloud API Key',
     },
   },
+  skillMarket: {
+    intro: '查看短剧流程当前使用的系统提示词、默认业务技能、审美与导演风格。',
+    refresh: '刷新目录', search: '搜索短剧技能与提示词', empty: '没有匹配的内容',
+    loadFailed: '短剧技能加载失败', copy: '复制正文', copied: '正文已复制', copyFailed: '复制失败，请手动选择正文',
+    version: '内容版本', enabled: '已启用', disabled: '已停用',
+    categories: { system: '系统提示词', production: '默认制作技能', aesthetic: '审美风格', director: '导演风格' },
+  },
   layout: {
+    skillMarket: '技能市场',
     creator: '创作者',
     nav: {
       home: '创作中心',
@@ -167,16 +177,18 @@ export default {
   },
   shortDrama: {
     workflow: {
-      idea: { title: '创意设定', desc: '输入故事核心与生成偏好' },
-      script: { title: '剧本打磨', desc: '编辑大纲、正文与基调' },
+      idea: { title: '输入想法', desc: '输入故事核心并生成剧本' },
+      script: { title: '剧本审阅', desc: '审阅正文或提交修改意见' },
       assets: { title: '资产配置', desc: '角色档案与场景站位' },
       storyboard: { title: '分镜确认', desc: '镜头规划与视频提示词' },
     },
     options: {
       artStyle: {
+        scriptTone: '剧本风格 / 基调',
         realistic: '真实写实',
         americanComic: '美式漫画',
         chineseComic: '国漫风格',
+        chinese3d: '国风三维动画',
         japaneseAnime: '日系动漫',
         custom: '自定义风格',
       },

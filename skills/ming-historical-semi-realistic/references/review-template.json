@@ -1,0 +1,21 @@
+{
+  "approvalStatus": "candidate_for_user_confirmation",
+  "assetId": "",
+  "predictionId": "",
+  "actualModel": "",
+  "skillVersion": "",
+  "reviewScope": "face_master_or_full_body_or_scene",
+  "faceIdentityMatchesApprovedReference": null,
+  "pixels": [],
+  "observations": {
+    "adultProportionsAndFace": "待实图检查",
+    "nativeEyeIrisBrowNoseLipHairline": "按原图100%逐项检查，不以分辨率代替",
+    "styleMatchesCastAndScene": "检查CG塑形、材料、主光与演员差异",
+    "historicalIdentityAndClothes": "待实图检查",
+    "materialsAndLighting": "待实图检查",
+    "handsScarsAndFraming": "待实图检查",
+    "spatialContinuityAndExtraObjects": "待实图检查"
+  },
+  "defects": [],
+  "userSelection": null
+}

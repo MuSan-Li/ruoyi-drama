@@ -1,8 +1,11 @@
 import type { GetSessionListVO } from './types';
 import { get, put } from '@/utils/request';
 
-export function getModelList(params?: { category?: string }) {
-  const query = params?.category ? `?category=${encodeURIComponent(params.category)}` : '';
+export function getModelList(params?: { category?: string; providerCode?: string }) {
+  const search = new URLSearchParams();
+  if (params?.category) search.set('category', params.category);
+  if (params?.providerCode) search.set('providerCode', params.providerCode);
+  const query = search.size ? `?${search}` : '';
   return get<GetSessionListVO[]>(`/system/model/modelList${query}`).json();
 }
 

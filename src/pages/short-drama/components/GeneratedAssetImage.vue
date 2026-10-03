@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { authenticatedFetch } from '@/utils/authenticatedFetch';
 import { onUnmounted, ref, watch } from 'vue';
 import { useUserStore } from '@/stores';
-const props = defineProps<{ src: string; title: string; model?: string; predictionId?: string }>();
+const props = withDefaults(defineProps<{ src: string; title: string; model?: string; predictionId?: string; interactive?: boolean; fit?: 'contain' | 'cover' }>(), { interactive: true, fit: 'contain' });
 const displayed = ref(props.src);
 const error = ref('');
 const loading = ref(false);
@@ -19,7 +20,7 @@ async function previewFromProject() {
   try {
     const base=String(import.meta.env.VITE_API_URL || '').replace(/\/$/,'');
     const query=new URLSearchParams({ model:props.model || '', predictionId:props.predictionId || '' });
-    const response=await fetch(local ? `${base}${props.src}` : `${base}/media/content?${query}`,{ signal:request.signal, headers:{ authorization:`Bearer ${useUserStore().token}`, ClientID:import.meta.env.VITE_CLIENT_ID } });
+    const response=await authenticatedFetch(local ? `${base}${props.src}` : `${base}/media/content?${query}`,{ signal:request.signal, headers:{ authorization:`Bearer ${useUserStore().token}`, ClientID:import.meta.env.VITE_CLIENT_ID } });
     const contentType=response.headers.get('content-type') || '';
     if (!response.ok || !contentType.startsWith('image/')) throw new Error('预览暂不可用，请重试');
     const blob=await response.blob();
@@ -31,11 +32,11 @@ async function previewFromProject() {
 </script>
 <template>
   <div class="generated-image">
-    <el-image :src="displayed" :alt="title" :preview-src-list="[displayed]" preview-teleported fit="contain" @error="previewFromProject">
-      <template #error><div class="image-state"><span>{{ loading ? '加载中…' : '图片暂未加载' }}</span><el-button v-if="!loading" size="small" plain @click.stop="previewFromProject">重试预览</el-button></div></template>
+    <el-image :src="displayed" :alt="title" :preview-src-list="interactive && displayed ? [displayed] : []" preview-teleported hide-on-click-modal referrerpolicy="no-referrer" :fit="fit" loading="lazy" @error="previewFromProject">
+      <template #error><div class="image-state"><span>{{ loading ? '加载中…' : '图片暂未加载' }}</span><el-button v-if="!loading && interactive" size="small" plain @click.stop="previewFromProject">重试预览</el-button></div></template>
     </el-image>
   </div>
 </template>
 <style scoped>
-.generated-image { width:100%;min-width:0; }.generated-image .el-image { display:block;width:100%; aspect-ratio:16/9; height:var(--asset-image-height,145px); background:#f1f5f9; border-radius:8px; }.image-state { display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;height:100%;font-size:12px;color:#64748b; }
+.generated-image { width:100%;min-width:0; }.generated-image .el-image { display:block;width:100%; aspect-ratio:16/9; height:var(--asset-image-height,145px); background:var(--drama-image-surface,#f1f5f9); border-radius:var(--asset-image-radius,8px); }.image-state { display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;height:100%;font-size:12px;color:var(--drama-text-secondary,#64748b); }
 </style>

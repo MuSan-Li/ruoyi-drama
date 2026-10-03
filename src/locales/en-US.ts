@@ -4,6 +4,7 @@ const enUS: MessageSchema = {
   common: {
     webTitle: 'AI Short Drama Studio',
     requestFailed: 'Request failed',
+    loginRequired: 'Please sign in',
     time: {
       justNow: 'just now',
       minutesAgo: '{n} min ago',
@@ -129,8 +130,9 @@ const enUS: MessageSchema = {
     keyConfig: {
       entry: 'Key config',
       dialogTitle: 'One-click Atlas Key setup',
-      tip: 'Paste your Atlas Cloud API Key — it will be applied to all Atlas models (image / video) in bulk. Get one at atlascloud.ai.',
-      warning: 'Submitting will overwrite the Key for all current Atlas models. Please double-check.',
+      tip: 'One API Key for all Atlas models.',
+      getKey: 'Get a Key',
+      warning: 'Saving replaces existing Atlas keys.',
       label: 'Atlas API Key',
       placeholder: 'Paste your Atlas Cloud API Key',
       cancel: 'Cancel',
@@ -143,7 +145,15 @@ const enUS: MessageSchema = {
       atlasKeyRequired: 'Please enter an Atlas Cloud API Key',
     },
   },
+  skillMarket: {
+    intro: 'Browse the current drama prompts, production skills, aesthetics and directing styles.',
+    refresh: 'Refresh', search: 'Search drama skills and prompts', empty: 'No matching content',
+    loadFailed: 'Could not load drama skills', copy: 'Copy content', copied: 'Content copied', copyFailed: 'Copy failed; select the text manually',
+    version: 'Version', enabled: 'Enabled', disabled: 'Disabled',
+    categories: { system: 'System prompts', production: 'Production skills', aesthetic: 'Aesthetics', director: 'Directing styles' },
+  },
   layout: {
+    skillMarket: 'Skill market',
     creator: 'Creator',
     nav: {
       home: 'Studio',
@@ -164,16 +174,18 @@ const enUS: MessageSchema = {
   },
   shortDrama: {
     workflow: {
-      idea: { title: 'Idea setup', desc: 'Enter story core & generation preferences' },
-      script: { title: 'Script polish', desc: 'Edit outline, body & tone' },
+      idea: { title: 'Story idea', desc: 'Enter the story core and generate a script' },
+      script: { title: 'Script review', desc: 'Review the script or submit revision notes' },
       assets: { title: 'Asset config', desc: 'Character profiles & scene blocking' },
       storyboard: { title: 'Storyboard', desc: 'Shot planning & video prompts' },
     },
     options: {
       artStyle: {
+        scriptTone: 'Script style / tone',
         realistic: 'Realistic',
         americanComic: 'American comic',
         chineseComic: 'Chinese comic',
+        chinese3d: 'Chinese 3D animation',
         japaneseAnime: 'Japanese anime',
         custom: 'Custom style',
       },

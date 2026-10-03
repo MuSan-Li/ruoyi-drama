@@ -1,13 +1,13 @@
 ﻿<script setup lang="ts">
 import type { ShortDramaProject } from '@/api/shortDrama/types';
-import { computed, onMounted, reactive, ref } from 'vue';
-import { ElMessage } from 'element-plus';
-import type { FormInstance, FormRules } from 'element-plus';
+import { computed, onMounted, ref } from 'vue';
+import { ElMessage } from '@/utils/message';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { getArtStyleOptions, getVideoRatioOptions, artStyleLabel } from '@/constants/drama';
+import { artStyleLabel } from '@/constants/drama';
+import { useDramaSkillCatalog } from '@/composables/useDramaSkillCatalog';
+import { projectAestheticLabel } from '@/utils/dramaSkillBindings';
 import { listShortDramaProjects } from '@/api/shortDrama';
-import { batchUpdateKeyByProvider } from '@/api/model';
 import { useAppStore } from '@/stores';
 
 const router = useRouter();
@@ -16,11 +16,7 @@ const appStore = useAppStore();
 const loading = ref(true);
 const projects = ref<ShortDramaProject[]>([]);
 const idea = ref('');
-const videoRatio = ref('9:16');
-const artStyle = ref('realistic');
-
-const artStyleOptions = computed(() => getArtStyleOptions(t));
-const videoRatioOptions = computed(() => getVideoRatioOptions(t));
+const { catalog: skillCatalog } = useDramaSkillCatalog();
 
 const activeCount = computed(() => projects.value.filter(item => item.status !== 'archived').length);
 const recentProjects = computed(() => projects.value.slice(0, 6));
@@ -48,8 +44,6 @@ function startCreation() {
     name: 'shortDrama',
     query: {
       idea: idea.value.trim(),
-      ratio: videoRatio.value,
-      style: artStyle.value,
     },
   });
 }
@@ -75,50 +69,12 @@ function formatTime(value?: string) {
 
 onMounted(refreshProjects);
 
-const keyDialogVisible = ref(false);
-const keyFormRef = ref<FormInstance>();
-const keySubmitting = ref(false);
-const keyForm = reactive({ apiKey: '' });
-const keyRules = computed<FormRules>(() => ({
-  apiKey: [{ required: true, message: t('home.messages.atlasKeyRequired'), trigger: 'blur' }],
-}));
-
-function openKeyDialog() {
-  keyForm.apiKey = '';
-  keyDialogVisible.value = true;
-}
-
-async function submitKey(formEl?: FormInstance) {
-  if (!formEl) return;
-  try {
-    await formEl.validate();
-  }
-  catch {
-    return;
-  }
-  keySubmitting.value = true;
-  try {
-    await batchUpdateKeyByProvider('atlas', keyForm.apiKey.trim());
-    ElMessage.success(t('home.messages.atlasKeyUpdated'));
-    keyDialogVisible.value = false;
-  }
-  catch {
-    // request.ts 已统一提示错误。
-  }
-  finally {
-    keySubmitting.value = false;
-  }
-}
 </script>
 
 <template>
   <div class="home-page">
     <div class="ambient ambient-one" />
     <div class="ambient ambient-two" />
-
-    <button type="button" class="key-config-entry" @click="openKeyDialog">
-      <el-icon><Key /></el-icon><span>{{ t('home.keyConfig.entry') }}</span>
-    </button>
 
     <main class="home-content">
       <section class="hero-grid">
@@ -165,7 +121,7 @@ async function submitKey(formEl?: FormInstance) {
       <section class="composer-shell">
         <div class="composer-label">
           <span><el-icon><MagicStick /></el-icon></span>
-          <div><strong>{{ t('home.composer.title') }}</strong><small>{{ t('home.composer.sub') }}</small></div>
+          <div><strong>{{ t('home.composer.title') }}</strong></div>
         </div>
         <el-input
           v-model="idea"
@@ -177,12 +133,6 @@ async function submitKey(formEl?: FormInstance) {
         />
         <div class="composer-footer">
           <div class="quick-options">
-            <el-select v-model="videoRatio" :aria-label="t('shortDrama.options.ratio.vertical')">
-              <el-option v-for="item in videoRatioOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-            <el-select v-model="artStyle" :aria-label="t('shortDrama.options.artStyle.realistic')">
-              <el-option v-for="item in artStyleOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
             <span class="shortcut">{{ t('home.composer.shortcut') }}</span>
           </div>
           <el-button class="create-button" type="primary" @click="startCreation">
@@ -212,7 +162,7 @@ async function submitKey(formEl?: FormInstance) {
               <span class="project-status"><b />{{ project.status === 'archived' ? t('home.project.statusArchived') : t('home.project.statusActive') }}</span>
               <div class="visual-number">{{ String(index + 1).padStart(2, '0') }}</div>
               <el-icon><Film /></el-icon>
-              <small>{{ artStyleLabel(project.artStyle, t) }}</small>
+              <small>{{ projectAestheticLabel(project, skillCatalog, artStyleLabel(project.artStyle, t)) }}</small>
             </div>
             <div class="project-info">
               <strong>{{ project.projectName }}</strong>
@@ -244,19 +194,7 @@ async function submitKey(formEl?: FormInstance) {
       </section>
     </main>
 
-    <el-dialog v-model="keyDialogVisible" :title="t('home.keyConfig.dialogTitle')" width="460px" append-to-body>
-      <p class="key-dialog-tip">{{ t('home.keyConfig.tip') }}</p>
-      <el-alert type="warning" :closable="false" show-icon :title="t('home.keyConfig.warning')" style="margin-bottom: 16px;" />
-      <el-form ref="keyFormRef" :model="keyForm" :rules="keyRules" label-position="top">
-        <el-form-item :label="t('home.keyConfig.label')" prop="apiKey">
-          <el-input v-model="keyForm.apiKey" type="password" show-password :placeholder="t('home.keyConfig.placeholder')" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="keyDialogVisible = false">{{ t('home.keyConfig.cancel') }}</el-button>
-        <el-button type="primary" :loading="keySubmitting" @click="submitKey(keyFormRef)">{{ t('home.keyConfig.save') }}</el-button>
-      </template>
-    </el-dialog>
+
   </div>
 </template>
 
@@ -268,7 +206,7 @@ async function submitKey(formEl?: FormInstance) {
   color: var(--drama-text);
   background:
     radial-gradient(circle at 8% 8%, rgb(37 99 235 / 8%), transparent 28%),
-    radial-gradient(circle at 92% 16%, rgb(56 189 248 / 10%), transparent 25%),
+    radial-gradient(circle at 92% 16%, rgb(82 139 240 / 10%), transparent 25%),
     var(--drama-canvas);
 }
 
@@ -283,7 +221,7 @@ async function submitKey(formEl?: FormInstance) {
 }
 
 .ambient-one { top: 60px; left: -240px; background: radial-gradient(circle, rgb(37 99 235 / 16%), transparent 68%); }
-.ambient-two { top: 140px; right: -250px; background: radial-gradient(circle, rgb(56 189 248 / 17%), transparent 68%); }
+.ambient-two { top: 140px; right: -250px; background: radial-gradient(circle, rgb(82 139 240 / 17%), transparent 68%); }
 
 .home-content {
   position: relative;
@@ -292,31 +230,6 @@ async function submitKey(formEl?: FormInstance) {
   padding: 72px 0 90px;
   margin: 0 auto;
 }
-
-.key-config-entry {
-  position: fixed;
-  top: calc(var(--header-container-default-heigth) + 18px);
-  right: 28px;
-  z-index: 20;
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  padding: 8px 14px;
-  font-size: 12px;
-  color: #566986;
-  cursor: pointer;
-  background: rgb(255 255 255 / 82%);
-  border: 1px solid #e2e8f1;
-  border-radius: 10px;
-  box-shadow: 0 8px 22px rgb(37 99 235 / 8%);
-  backdrop-filter: blur(10px);
-  transition: .2s ease;
-}
-
-.key-config-entry:hover { color: var(--drama-primary); border-color: #93c5fd; }
-
-.key-dialog-tip { margin: 0 0 14px; font-size: 13px; line-height: 1.7; color: #64748b; }
-.key-dialog-tip a { color: var(--drama-primary); }
 
 .hero-grid {
   display: grid;
@@ -341,7 +254,7 @@ async function submitKey(formEl?: FormInstance) {
 .eyebrow span {
   width: 28px;
   height: 1px;
-  background: linear-gradient(90deg, #2563eb, #38bdf8);
+  background: linear-gradient(90deg, var(--drama-primary), var(--drama-primary));
 }
 
 .hero-copy h1 {
@@ -355,7 +268,7 @@ async function submitKey(formEl?: FormInstance) {
 .hero-copy h1 em {
   font-style: normal;
   color: transparent;
-  background: linear-gradient(100deg, #2563eb, #0ea5e9 68%, #38bdf8);
+  background:var(--drama-primary);
   background-clip: text;
 }
 
@@ -403,18 +316,18 @@ async function submitKey(formEl?: FormInstance) {
 .shot { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; color: #fff; border-radius: 14px; }
 .shot::after { position: absolute; inset: 0; content: ''; background: linear-gradient(145deg, transparent, rgb(0 0 0 / 30%)); }
 .shot > * { position: relative; z-index: 1; }
-.shot-main { grid-row: 1 / 3; background: radial-gradient(circle at 62% 30%, #67d2f6, #2563eb 52%, #173b83 100%); }
+.shot-main { grid-row: 1 / 3; background: radial-gradient(circle at 62% 30%, #a9ceff, var(--drama-primary) 52%, #214582 100%); }
 .shot-main > span { position: absolute; top: 13px; left: 13px; font: 700 9px/1 monospace; letter-spacing: .12em; opacity: .7; }
 .shot-main .el-icon { font-size: 40px; opacity: .92; }
 .shot-main small { margin-top: 12px; font-size: 11px; opacity: .7; }
 .shot-side { gap: 8px; font-size: 24px; }
 .shot-side small { font-size: 10px; opacity: .72; }
-.shot-side.one { background: linear-gradient(145deg, #a78bfa, #6366f1); }
-.shot-side.two { background: linear-gradient(145deg, #5eead4, #0ea5e9); }
+.shot-side.one { background: linear-gradient(145deg, #a8c5f7, #5b7fae); }
+.shot-side.two { background: linear-gradient(145deg, #b5dcfc, var(--drama-primary-hover)); }
 
 .pipeline-steps { display: flex; gap: 9px; align-items: center; padding: 16px 5px 3px; }
 .pipeline-steps span { display: flex; gap: 4px; align-items: center; white-space: nowrap; font-size: 10px; color: #8b94a3; }
-.pipeline-steps span.done { color: #2563eb; }
+.pipeline-steps span.done { color: var(--drama-primary); }
 .pipeline-steps b { font-family: monospace; }
 .pipeline-steps i { flex: 1; height: 1px; background: #e0e4eb; }
 
@@ -428,9 +341,9 @@ async function submitKey(formEl?: FormInstance) {
   box-shadow: 0 22px 65px rgb(37 99 235 / 10%);
 }
 
-.composer-shell::before { position: absolute; inset: -1px; z-index: -1; content: ''; background: linear-gradient(120deg, rgb(37 99 235 / 42%), transparent 35%, transparent 65%, rgb(56 189 248 / 42%)); border-radius: inherit; filter: blur(10px); opacity: .45; }
+.composer-shell::before { position: absolute; inset: -1px; z-index: -1; content: ''; background: linear-gradient(120deg, rgb(37 99 235 / 42%), transparent 35%, transparent 65%, rgb(82 139 240 / 42%)); border-radius: inherit; filter: blur(10px); opacity: .45; }
 .composer-label { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
-.composer-label > span { display: grid; width: 38px; height: 38px; color: #fff; background: linear-gradient(145deg, #2563eb, #38bdf8); border-radius: 11px; box-shadow: 0 8px 18px rgb(37 99 235 / 22%); place-items: center; }
+.composer-label > span { display: grid; width: 38px; height: 38px; color: #fff; background: linear-gradient(145deg, var(--drama-primary), var(--drama-primary)); border-radius: 11px; box-shadow: 0 8px 18px rgb(37 99 235 / 22%); place-items: center; }
 .composer-label div { display: grid; gap: 4px; }
 .composer-label strong { font-size: 15px; }
 .composer-label small { font-size: 12px; color: #8a93a2; }
@@ -440,7 +353,7 @@ async function submitKey(formEl?: FormInstance) {
 .quick-options { display: flex; gap: 9px; align-items: center; }
 .quick-options :deep(.el-select) { width: 138px; }
 .shortcut { margin-left: 6px; font-size: 11px; color: #a1a8b4; }
-.create-button { height: 42px; padding: 0 22px; background: linear-gradient(110deg, #2563eb, #38bdf8); border: 0; border-radius: 11px; box-shadow: 0 10px 24px rgb(37 99 235 / 25%); }
+.create-button { height: 42px; padding: 0 22px; background:var(--drama-primary); border: 0; border-radius: 11px; box-shadow: 0 10px 24px rgb(37 99 235 / 25%); }
 
 .section-block { margin-bottom: 88px; }
 .section-heading { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
@@ -452,10 +365,10 @@ async function submitKey(formEl?: FormInstance) {
 .project-card { overflow: hidden; padding: 0; text-align: left; cursor: pointer; background: #fff; border: 1px solid #e7eaf0; border-radius: 18px; box-shadow: 0 8px 28px rgb(39 51 78 / 5%); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
 .project-card:hover { border-color: #93c5fd; box-shadow: 0 18px 40px rgb(37 99 235 / 14%); transform: translateY(-4px); }
 .project-visual { position: relative; display: grid; height: 150px; color: rgb(255 255 255 / 82%); place-items: center; }
-.tone-0 { background: radial-gradient(circle at 72% 24%, #67e8f9, #2563eb 72%); }
-.tone-1 { background: radial-gradient(circle at 70% 20%, #c4b5fd, #6366f1 72%); }
-.tone-2 { background: radial-gradient(circle at 26% 30%, #5eead4, #0284c7 72%); }
-.tone-3 { background: radial-gradient(circle at 68% 28%, #f9a8d4, #8b5cf6 72%); }
+.tone-0 { background: radial-gradient(circle at 72% 24%, #abcfff, var(--drama-primary) 72%); }
+.tone-1 { background: radial-gradient(circle at 70% 20%, #c7d8f6, #5b7fae 72%); }
+.tone-2 { background: radial-gradient(circle at 26% 30%, #b5dcfc, #4778be 72%); }
+.tone-3 { background: radial-gradient(circle at 68% 28%, #c9d5eb, #647fae 72%); }
 .project-visual > .el-icon { font-size: 34px; }
 .project-visual > small { position: absolute; right: 14px; bottom: 12px; font-size: 10px; letter-spacing: .08em; }
 .visual-number { position: absolute; right: 13px; bottom: -15px; font: 800 76px/1 monospace; color: rgb(255 255 255 / 7%); }
@@ -471,16 +384,16 @@ async function submitKey(formEl?: FormInstance) {
 .empty-projects div { flex: 1; display: grid; gap: 5px; }
 .empty-projects p { margin: 0; font-size: 12px; color: #8b94a3; }
 
-.guide-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 70px; align-items: start; padding: 48px; color: #0f172a; background: linear-gradient(135deg, #eff6ff, #ecfeff 68%, #f0f9ff); border: 1px solid #dbeafe; border-radius: 26px; box-shadow: 0 28px 70px rgb(37 99 235 / 11%); }
+.guide-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 70px; align-items: start; padding: 48px; color: #0f172a; background: linear-gradient(135deg, var(--drama-primary-soft), var(--drama-surface-muted) 68%, #f0f9ff); border: 1px solid var(--drama-border); border-radius: 26px; box-shadow: 0 28px 70px rgb(37 99 235 / 11%); }
 .guide-copy { position: sticky; top: 20px; }
-.guide-copy > span { color: #2563eb; }
+.guide-copy > span { color: var(--drama-primary); }
 .guide-copy h2 { margin: 18px 0; font-size: 31px; line-height: 1.35; }
 .guide-copy p { margin: 0 0 24px; font-size: 13px; line-height: 1.8; color: #64748b; }
-.guide-copy button { color: #2563eb; }
+.guide-copy button { color: var(--drama-primary); }
 .guide-steps { display: grid; gap: 10px; }
-.guide-steps article { display: grid; grid-template-columns: 34px 42px 1fr; gap: 13px; align-items: center; padding: 15px; background: rgb(255 255 255 / 76%); border: 1px solid #dbeafe; border-radius: 14px; box-shadow: 0 8px 24px rgb(37 99 235 / 6%); }
-.guide-steps article > b { font: 700 10px/1 monospace; color: #2563eb; }
-.guide-steps article > span { display: grid; width: 38px; height: 38px; color: #2563eb; background: #dbeafe; border-radius: 10px; place-items: center; }
+.guide-steps article { display: grid; grid-template-columns: 34px 42px 1fr; gap: 13px; align-items: center; padding: 15px; background: rgb(255 255 255 / 76%); border: 1px solid var(--drama-border); border-radius: 14px; box-shadow: 0 8px 24px rgb(37 99 235 / 6%); }
+.guide-steps article > b { font: 700 10px/1 monospace; color: var(--drama-primary); }
+.guide-steps article > span { display: grid; width: 38px; height: 38px; color: var(--drama-primary); background: var(--drama-border); border-radius: 10px; place-items: center; }
 .guide-steps article div { display: grid; gap: 4px; }
 .guide-steps strong { font-size: 13px; }
 .guide-steps p { margin: 0; font-size: 11px; color: #64748b; }

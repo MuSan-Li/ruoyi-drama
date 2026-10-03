@@ -1,0 +1,109 @@
+{
+  "repository": "https://github.com/liangdabiao/smy-seedance-storyboard",
+  "readDate": "2026-10-03",
+  "files": [
+    {
+      "path": "upstream/README.md",
+      "sha256": "b488410ddc5ea5538e3051de9d6e499864abfb7690bf6b6d4c1d6392cbb2df1b",
+      "gitBlobSha1": "a1e1a1fcef051722c3e0bb3d7e0a256b8886422e"
+    },
+    {
+      "path": "upstream/SKILL.md",
+      "sha256": "564adff14636afbf9fa38e8edf6db2c7e8db8e1e8762f0b2346377998fb0d28e",
+      "gitBlobSha1": "cb605454331a6284179aead2dd46cb28b695eef4"
+    },
+    {
+      "path": "upstream/references/seedance-manual.md",
+      "sha256": "c87467e814722a354fc7abc1a3347a00eb349f81cd6999ce844ee61389df3d96",
+      "gitBlobSha1": "c024e45ab9b969ff9bd1358db643d3f2e3c5ca15"
+    },
+    {
+      "path": "upstream/references/上美影原始提示词.txt",
+      "sha256": "f555e265aba8a3249d7b9eeb31078f94a280d220248aa3716832201ea27a1077",
+      "gitBlobSha1": "278541fde5cf0712beac8895392a0e370b7798d3"
+    },
+    {
+      "path": "upstream/references/上美影风格指南.md",
+      "sha256": "75429284f414e810bd96e8319b5553ff24965fe05f0a745f344cddc145482465",
+      "gitBlobSha1": "ad5637f4d4bd6362e264081dfd4d4ad01fcb363f"
+    },
+    {
+      "path": "upstream/references/优化分镜.md",
+      "sha256": "8470bb749b50085fc368ec0aba718c91a0b145ce8153384621f38ed2b01610d6",
+      "gitBlobSha1": "9373bea652c173757287cb7c6ea0a5397dd939aa"
+    },
+    {
+      "path": "upstream/references/分镜优化与声音设计.md",
+      "sha256": "f0de5525f286f9dbfb19b23732ce87daa59da886fba45db0c474b12fab738b41",
+      "gitBlobSha1": "8dc6fe4cf5cedb2732b640fee9022ca2c91a1803"
+    },
+    {
+      "path": "upstream/references/好剧本.md",
+      "sha256": "aa3f9f729d164f4f37018d3299bbe8effa3ee8f2e7d8fe472a360d275de9bf0e",
+      "gitBlobSha1": "b896a032e70128a7ecb096c04e0f135648403a79"
+    },
+    {
+      "path": "upstream/references/故事转视频脚本-转换工具.md",
+      "sha256": "0769a99ac92b61d51a3c119020f9f2e0625604a80660533e91de8f22158c8377",
+      "gitBlobSha1": "9e2fa9b3d858415106a3030afcacb62aa84bac13"
+    },
+    {
+      "path": "upstream/罗刹市奇幻故事项目/罗刹市_分镜提示词.md",
+      "sha256": "c6748508cd06d1980cd701b327faff44e100c43edf546767a7b58c45e3e8ed1a",
+      "gitBlobSha1": "8d73237a429eb9b0859fef7a7f86f12118d1554a"
+    },
+    {
+      "path": "upstream/罗刹市奇幻故事项目/罗刹市_剧本.md",
+      "sha256": "d7417188ff864491cdbf829c7fd051fbb92e8e0166e76806cbd1e3b0def10e8d",
+      "gitBlobSha1": "1d1ba6886046dcd769cf95bda5893a6d6a672c79"
+    },
+    {
+      "path": "upstream/罗刹市奇幻故事项目/罗刹市_资产生图提示词.md",
+      "sha256": "21f4d498c3a64169ea3aa295a5670bcc1d63db0b044f5df0d4f3caf0bdf090b9",
+      "gitBlobSha1": "54cd7261d642581aa9db747d1642e49a2df527e4"
+    },
+    {
+      "path": "upstream/鲁智深醉闹五台山项目/鲁智深醉闹五台山_E01_分镜.md",
+      "sha256": "31a24fbe6c70320077741c0679aa645d5b814be8308dafbdaad6a411bbae10dc",
+      "gitBlobSha1": "50c4de75150a252dfaced507517d98cedc7a44b2"
+    },
+    {
+      "path": "upstream/鲁智深醉闹五台山项目/鲁智深醉闹五台山_E02_分镜.md",
+      "sha256": "49d1bb380f182676e3d2205f199074ad765c6deedfdb0cc3db202302bede9d29",
+      "gitBlobSha1": "379b27a2f59f06d469963700f975bf3f3e1771bb"
+    },
+    {
+      "path": "upstream/鲁智深醉闹五台山项目/鲁智深醉闹五台山_E03_分镜.md",
+      "sha256": "7ff78117db07c91e6b963feefe1b162c004c1a919b78c5ac6db075ddebdc71f0",
+      "gitBlobSha1": "d260e1322e9ec585e80328137d3f8850c9489c88"
+    },
+    {
+      "path": "upstream/鲁智深醉闹五台山项目/鲁智深醉闹五台山_E04_分镜.md",
+      "sha256": "de99eae29aafae20a64075af292f82e562e541fb3813be119df69d343f047127",
+      "gitBlobSha1": "9609b230abd0412e0bd7951ac6c4b7450e54ae11"
+    },
+    {
+      "path": "upstream/鲁智深醉闹五台山项目/鲁智深醉闹五台山_E05_分镜.md",
+      "sha256": "3f78d33c3574f39968e30e1f9160f3021d6f5edba68e1a20cfbebfbf06bd7fb0",
+      "gitBlobSha1": "cc9844cf4cf9c1e4f0c8f0da147edcb055e456cc"
+    },
+    {
+      "path": "upstream/鲁智深醉闹五台山项目/鲁智深醉闹五台山_使用指南.md",
+      "sha256": "155fb45e453a992fee8b2ecae041018d85494c2b514f9436c7c23669d183caaf",
+      "gitBlobSha1": "4a40f636e8d8b6542cfd25ebe29dd00b52f22ba2"
+    },
+    {
+      "path": "upstream/鲁智深醉闹五台山项目/鲁智深醉闹五台山_剧本.md",
+      "sha256": "b1da64a5a9fc67257d928c46cbb80d2754696060af4fe587f0d873a8925e9ae0",
+      "gitBlobSha1": "6d125b505862e242ab9eabf072d2a00ab815fa49"
+    },
+    {
+      "path": "upstream/鲁智深醉闹五台山项目/鲁智深醉闹五台山_素材清单.md",
+      "sha256": "859cf6317ab56fd371e4d1d20bee6550f12a5b76bcac23e0e456048f73326bdd",
+      "gitBlobSha1": "16ecc93cbc95adbebf26521038641cf1ecc9e879"
+    }
+  ],
+  "license": "No license file in the installed source; preserve attribution and review upstream terms before redistribution.",
+  "scope": "Text source and adaptation only; no film stills or paid source media copied.",
+  "commit": "58235b33199ddf55f3eecbd3a7f9dd1bcc2cddf9"
+}

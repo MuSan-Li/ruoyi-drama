@@ -1,0 +1,171 @@
+// Shared studio tokens for production pages and Element Plus overlays.
+:root:root {
+  --drama-canvas: #f4f7fc;
+  --drama-surface: #ffffff;
+  --drama-surface-strong: #ffffff;
+  --drama-surface-muted: #f7f9fc;
+  --drama-image-surface: #eef2f7;
+  --drama-text: #202c40;
+  --drama-text-secondary: #596a82;
+  --drama-text-tertiary: #7b8aa0;
+  --drama-border: #dde5f0;
+  --drama-border-subtle: #edf1f7;
+  --drama-control-border: #e1e7f0;
+  --drama-control-border-hover: #b8c8e0;
+  --drama-scrollbar-thumb: #c4cfdf;
+  --drama-scrollbar-thumb-hover: #94a8c3;
+  --drama-primary: #2563eb;
+  --drama-primary-hover: #1d4ed8;
+  --drama-primary-soft: #eff5ff;
+  --drama-secondary: #528bf0;
+  --drama-ai: #5373ac;
+  --drama-cyan-soft: #edf7ff;
+  --drama-success: #398360;
+  --drama-success-soft: #edf5ef;
+  --drama-warning: #966d32;
+  --drama-warning-soft: #f8f2e7;
+  --drama-danger: #b64b45;
+  --drama-focus: #cfe0ff;
+  --drama-radius-sm: 6px;
+  --drama-radius-md: 10px;
+  --drama-radius-lg: 14px;
+  --drama-space-1: 4px;
+  --drama-space-2: 8px;
+  --drama-space-3: 12px;
+  --drama-space-4: 16px;
+  --drama-space-5: 24px;
+  --drama-space-6: 32px;
+  --drama-shadow-sm: 0 2px 6px rgb(30 55 95 / 3%);
+  --drama-shadow-md: 0 8px 24px rgb(30 55 95 / 8%);
+  --el-color-primary: var(--drama-primary);
+  --el-color-primary-light-3: #6795f1;
+  --el-color-primary-light-5: #9ebcf7;
+  --el-color-primary-light-7: #c6d8fc;
+  --el-color-primary-light-8: #dce7ff;
+  --el-color-primary-light-9: var(--drama-primary-soft);
+  --el-color-primary-dark-2: var(--drama-primary-hover);
+  --el-color-success: var(--drama-success);
+  --el-color-warning: var(--drama-warning);
+  --el-color-danger: var(--drama-danger);
+  --el-text-color-primary: var(--drama-text);
+  --el-text-color-regular: var(--drama-text-secondary);
+  --el-text-color-secondary: var(--drama-text-tertiary);
+  --el-border-color: var(--drama-border);
+  --el-border-color-light: var(--drama-border-subtle);
+  --el-border-radius-base: var(--drama-radius-sm);
+  --el-fill-color-blank: var(--drama-surface-strong);
+  --el-fill-color-light: var(--drama-surface-muted);
+  --el-font-size-base: 13px;
+}
+// Cover page, sidebar, editor, drawer and teleported overlay scroll regions.
+* {
+  scrollbar-width:thin;
+  scrollbar-color:var(--drama-scrollbar-thumb) transparent;
+}
+@supports selector(::-webkit-scrollbar) {
+  // Chromium uses these pseudo-elements for a consistent gutter and rounded thumb.
+  * { scrollbar-width:auto; scrollbar-color:auto; }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background:transparent; }
+  ::-webkit-scrollbar-thumb {
+    min-height:28px;
+    min-width:28px;
+    border:1px solid transparent;
+    border-radius:999px;
+    background:var(--drama-scrollbar-thumb);
+    background-clip:padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover, ::-webkit-scrollbar-thumb:active { background-color:var(--drama-scrollbar-thumb-hover); }
+  ::-webkit-scrollbar-button { display:none; width:0; height:0; }
+  // Shorten the side rails while keeping native thumb sizing and drag behavior.
+  .workspace::-webkit-scrollbar-track:vertical,
+  .project-list::-webkit-scrollbar-track:vertical {
+    margin-block:clamp(32px, 12vh, 128px);
+  }
+}
+:root .el-scrollbar {
+  --el-scrollbar-bg-color:var(--drama-scrollbar-thumb);
+  --el-scrollbar-hover-bg-color:var(--drama-scrollbar-thumb-hover);
+  --el-scrollbar-opacity:1;
+  --el-scrollbar-hover-opacity:1;
+}
+:root .el-scrollbar__bar.is-vertical { width:6px; }
+:root .el-scrollbar__bar.is-horizontal { height:6px; }
+@media (forced-colors:active) {
+  * { scrollbar-color:auto; }
+  ::-webkit-scrollbar-thumb { background-color:CanvasText; }
+}
+.app-shell, .el-dialog, .el-drawer, .el-message-box {
+  .el-button { font-weight:600; min-height:32px; box-shadow:none; }
+  .el-button + .el-button { margin-left:0; }
+  .el-button--small { min-height:28px; }
+  .el-input__wrapper, .el-select__wrapper { min-height:36px; }
+  .el-textarea__inner { padding:10px 12px; line-height:1.8; }
+  .el-input__inner, .el-textarea__inner { color:var(--drama-text); }
+  .el-input.is-disabled .el-input__wrapper, .el-textarea.is-disabled .el-textarea__inner { background:var(--drama-surface-muted); color:var(--drama-text-secondary); }
+  .el-form-item__label { color:var(--drama-text-secondary); font-size:12px; font-weight:600; }
+  .el-tag { --el-tag-border-radius:5px; font-weight:500; }
+  .el-tabs__item { font-size:13px; }
+  .el-divider--horizontal { margin:20px 0; }
+
+  // Native selects share the same single border as Element Plus controls.
+  select {
+    box-sizing:border-box;
+    min-height:36px;
+    max-width:100%;
+    border:1px solid var(--drama-control-border);
+    border-radius:var(--drama-radius-sm);
+    background-color:var(--drama-surface-strong);
+    color:var(--drama-text-secondary);
+    padding:6px 12px;
+    font:inherit;
+    font-size:13px;
+    line-height:1.5;
+    outline:none;
+    box-shadow:none;
+    transition:border-color .15s, background-color .15s;
+
+    &:not([multiple]) {
+      appearance:none;
+      padding-right:34px;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%237b8aa0' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:right 11px center;
+      background-size:14px;
+    }
+    &:hover:not(:disabled) { border-color:var(--drama-control-border-hover); }
+    &:focus { border-color:var(--drama-primary); }
+    &:disabled { background-color:var(--drama-surface-muted); border-color:var(--drama-border-subtle); color:var(--drama-text-tertiary); cursor:not-allowed; }
+    &[aria-invalid='true'] { border-color:var(--drama-danger); }
+  }
+}
+
+// Use a real 1px border; remove the library's inset shadow so borders never stack.
+.el-select .el-select__wrapper {
+  border:1px solid var(--drama-control-border);
+  border-radius:var(--drama-radius-sm);
+  box-shadow:none;
+  outline:none;
+  transition:border-color .15s, background-color .15s;
+}
+.el-select .el-select__wrapper.is-hovering:not(.is-focused):not(.is-disabled),
+.el-select .el-select__wrapper:hover:not(.is-focused):not(.is-disabled) { border-color:var(--drama-control-border-hover); box-shadow:none; }
+.el-select .el-select__wrapper.is-focused:not(.is-disabled) { border-color:var(--drama-primary); box-shadow:none; }
+.el-select .el-select__wrapper.is-disabled { border-color:var(--drama-border-subtle); background:var(--drama-surface-muted); box-shadow:none; }
+.el-form-item.is-error .el-select .el-select__wrapper { border-color:var(--drama-danger); box-shadow:none; }
+:root .el-select__popper.el-popper { border:1px solid var(--drama-control-border); border-radius:8px; box-shadow:var(--drama-shadow-md); }
+
+@media (forced-colors:active) {
+  .app-shell select:focus, .el-dialog select:focus, .el-drawer select:focus, .el-message-box select:focus,
+  .el-select .el-select__wrapper.is-focused { outline:1px solid Highlight; outline-offset:1px; }
+}
+.el-overlay .el-dialog, .el-message-box { border:1px solid var(--drama-border); border-radius:var(--drama-radius-lg); padding:24px; }
+.el-dialog__title, .el-drawer__title { font-size:16px; color:var(--drama-text); font-weight:650; }
+.el-drawer .el-drawer__header { margin-bottom:0; padding:20px 24px; border-bottom:1px solid var(--drama-border); }
+.el-drawer .el-drawer__body { padding:24px; }
+.el-overlay { background:rgb(22 34 55 / 35%); }
+.character-inspector { background:var(--drama-canvas); }
+.character-inspector .el-drawer__header { background:var(--drama-surface-strong); }
+:where(button, summary, a):focus-visible { outline:2px solid var(--drama-primary); outline-offset:3px; }
+@media(max-width:640px) { .el-drawer .el-drawer__header, .el-drawer .el-drawer__body { padding:16px; }.el-overlay .el-dialog { padding:18px; } }
+@media(prefers-reduced-motion:reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }

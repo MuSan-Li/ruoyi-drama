@@ -20,6 +20,7 @@ export function getArtStyleOptions(t: ComposerTranslation): LabeledOption<string
     { label: t('shortDrama.options.artStyle.realistic'), value: 'realistic' },
     { label: t('shortDrama.options.artStyle.americanComic'), value: 'american-comic' },
     { label: t('shortDrama.options.artStyle.chineseComic'), value: 'chinese-comic' },
+    { label: t('shortDrama.options.artStyle.chinese3d'), value: 'chinese-3d' },
     { label: t('shortDrama.options.artStyle.japaneseAnime'), value: 'japanese-anime' },
   ];
 }
@@ -48,9 +49,11 @@ export function getTransitionOptions(t: ComposerTranslation): LabeledOption<Shor
 export function artStyleLabel(value: string | undefined | null, t: ComposerTranslation): string {
   if (!value) return t('shortDrama.options.artStyle.realistic');
   switch (value) {
+    case 'script-tone': return t('shortDrama.options.artStyle.scriptTone');
     case 'realistic': return t('shortDrama.options.artStyle.realistic');
     case 'american-comic': return t('shortDrama.options.artStyle.americanComic');
     case 'chinese-comic': return t('shortDrama.options.artStyle.chineseComic');
+    case 'chinese-3d': return t('shortDrama.options.artStyle.chinese3d');
     case 'japanese-anime': return t('shortDrama.options.artStyle.japaneseAnime');
     default: return t('shortDrama.options.artStyle.custom');
   }

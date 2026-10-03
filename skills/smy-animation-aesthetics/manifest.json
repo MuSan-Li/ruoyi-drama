@@ -1,0 +1,9 @@
+{
+  "name": "smy-animation-aesthetics",
+  "title": "上美影动画 · 造型与色盘",
+  "type": "aesthetic",
+  "description": "传统二维动画的概括造型、手工笔触和单剧色盘；区分手绘平涂、水墨淡彩、剪纸与敦煌重彩的媒介规则。",
+  "enabled": true,
+  "artStyle": "",
+  "files": ["references/project-adaptation.md"]
+}

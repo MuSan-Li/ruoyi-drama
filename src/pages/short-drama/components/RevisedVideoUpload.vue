@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { authenticatedFetch } from '@/utils/authenticatedFetch';
 import { shallowRef } from 'vue';
 import { useUserStore } from '@/stores';
 const props = defineProps<{ projectId: string; storyboardId: string; videoId?: string; disabled?: boolean }>();
@@ -17,7 +18,7 @@ async function upload(event: Event) {
     body.append('file', file);
     body.append('expectedVideoId', props.videoId || '');
     const base = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-    const response = await fetch(`${base}/short-drama/${props.projectId}/materials/${props.storyboardId}/video`, {
+    const response = await authenticatedFetch(`${base}/short-drama/${props.projectId}/materials/${props.storyboardId}/video`, {
       method: 'POST', body,
       headers: { authorization: `Bearer ${useUserStore().token}`, ClientID: import.meta.env.VITE_CLIENT_ID },
     });

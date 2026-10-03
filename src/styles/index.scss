@@ -1,31 +1,12 @@
 @use 'reset-css';
+@use './studio';
 
 :root {
-  color: #0f172a;
+  color: var(--drama-text);
   font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
-  background: #f5f8ff;
+  background: var(--drama-canvas);
+  -webkit-font-smoothing: antialiased;
   --header-container-default-heigth: 64px;
-  --drama-canvas: #f5f8ff;
-  --drama-surface: rgb(255 255 255 / 92%);
-  --drama-surface-strong: #ffffff;
-  --drama-text: #0f172a;
-  --drama-text-secondary: #475569;
-  --drama-text-tertiary: #94a3b8;
-  --drama-border: #dbe7f5;
-  --drama-primary: #2563eb;
-  --drama-primary-hover: #1d4ed8;
-  --drama-secondary: #38bdf8;
-  --drama-ai: #8b5cf6;
-  --drama-success: #10b981;
-  --drama-primary-soft: #eff6ff;
-  --drama-cyan-soft: #ecfeff;
-  --el-color-primary: #2563eb;
-  --el-color-primary-light-3: #60a5fa;
-  --el-color-primary-light-5: #93c5fd;
-  --el-color-primary-light-7: #bfdbfe;
-  --el-color-primary-light-8: #dbeafe;
-  --el-color-primary-light-9: #eff6ff;
-  --el-color-primary-dark-2: #1d4ed8;
 }
 
 * {

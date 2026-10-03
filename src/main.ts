@@ -5,8 +5,8 @@ import App from './App.vue';
 import i18n from './locales';
 import router from './routers';
 import store from './stores';
-import './styles/index.scss';
 import 'element-plus/dist/index.css';
+import './styles/index.scss';
 
 const app = createApp(App);
 

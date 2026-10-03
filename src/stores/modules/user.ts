@@ -1,6 +1,7 @@
 import type { LoginUser } from '@/api/auth/types';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { resetLoginRequired } from '@/utils/loginRequiredState';
 
 export const useUserStore = defineStore(
   'short-drama-user',
@@ -10,6 +11,7 @@ export const useUserStore = defineStore(
 
     function setToken(value: string) {
       token.value = value;
+      resetLoginRequired();
     }
 
     function setUserInfo(value: LoginUser) {

@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessageBox } from 'element-plus';
+import { ElMessage } from '@/utils/message';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue';
+import AtlasKeyDialog from '@/components/AtlasKeyDialog.vue';
+import DramaSkillMarket from '@/pages/short-drama/components/DramaSkillMarket.vue';
 import { useUserStore } from '@/stores';
 
 const router = useRouter();
 const userStore = useUserStore();
 const { t } = useI18n();
+const keyDialogVisible = ref(false);
+const skillMarketVisible = ref(false);
 
 const displayName = computed(() => userStore.userInfo?.nickName || userStore.userInfo?.username || t('layout.creator'));
 const initials = computed(() => displayName.value.slice(0, 1).toUpperCase());
@@ -63,6 +68,8 @@ async function handleLogout() {
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item disabled><el-icon><User /></el-icon>{{ displayName }}</el-dropdown-item>
+              <el-dropdown-item divided @click="keyDialogVisible = true"><el-icon><Key /></el-icon>{{ t('home.keyConfig.entry') }}</el-dropdown-item>
+              <el-dropdown-item @click="skillMarketVisible = true"><el-icon><Collection /></el-icon>{{ t('layout.skillMarket') }}</el-dropdown-item>
               <el-dropdown-item divided @click="handleLogout"><el-icon><SwitchButton /></el-icon>{{ t('layout.logout.action') }}</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -72,6 +79,8 @@ async function handleLogout() {
     <main class="app-main">
       <router-view :key="$route.fullPath" />
     </main>
+    <AtlasKeyDialog v-model="keyDialogVisible" />
+    <DramaSkillMarket v-model="skillMarketVisible" />
   </div>
 </template>
 
@@ -93,8 +102,8 @@ async function handleLogout() {
   padding: 0 28px;
   color: var(--drama-text);
   background: rgb(255 255 255 / 90%);
-  border-bottom: 1px solid rgb(219 231 245 / 88%);
-  box-shadow: 0 8px 28px rgb(37 99 235 / 6%);
+  border-bottom:1px solid var(--drama-border);
+  box-shadow:none;
   backdrop-filter: blur(18px) saturate(1.2);
 }
 
@@ -113,9 +122,9 @@ async function handleLogout() {
   width: 38px;
   height: 38px;
   color: #fff;
-  background: linear-gradient(145deg, #2563eb, #38bdf8);
+  background: var(--drama-primary);
   border-radius: 11px;
-  box-shadow: 0 9px 22px rgb(37 99 235 / 25%);
+  box-shadow:var(--drama-shadow-sm);
   place-items: center;
 }
 
@@ -133,8 +142,8 @@ async function handleLogout() {
   gap: 4px;
   align-items: center;
   padding: 4px;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
+  background: var(--drama-surface-muted);
+  border: 1px solid var(--drama-border);
   border-radius: 12px;
 }
 
@@ -152,7 +161,7 @@ async function handleLogout() {
 }
 
 .main-nav a:hover { color: var(--drama-primary); }
-.main-nav a.router-link-active { color: var(--drama-primary); background: #fff; box-shadow: 0 5px 16px rgb(37 99 235 / 12%); }
+.main-nav a.router-link-active { color: var(--drama-primary); background: #fff; box-shadow:var(--drama-shadow-sm); }
 
 .header-actions {
   display: flex;
@@ -161,10 +170,10 @@ async function handleLogout() {
   justify-content: flex-end;
 }
 
-.new-project { height: 36px; padding: 0 14px; font-size: 12px; background: linear-gradient(110deg, #2563eb, #38bdf8); border: 0; border-radius: 10px; box-shadow: 0 8px 20px rgb(37 99 235 / 24%); }
+.new-project { height: 36px; padding: 0 14px; font-size: 12px; background: var(--drama-primary); border: 0; border-radius: 10px; box-shadow:var(--drama-shadow-sm); }
 .account-button { display: flex; gap: 8px; align-items: center; padding: 3px 6px 3px 3px; color: #354052; cursor: pointer; background: transparent; border: 0; border-radius: 10px; }
 .account-button:hover { background: #f2f4f7; }
-.avatar { display: grid; width: 32px; height: 32px; font-size: 12px; font-weight: 700; color: #fff; background: linear-gradient(145deg, #3b82f6, #0ea5e9); border-radius: 9px; box-shadow: 0 5px 14px rgb(37 99 235 / 20%); place-items: center; }
+.avatar { display: grid; width: 32px; height: 32px; font-size: 12px; font-weight: 700; color: #fff; background: var(--drama-primary-soft); color: var(--drama-primary); border-radius: 9px; box-shadow:var(--drama-shadow-sm); place-items: center; }
 .account-copy { display: grid; min-width: 52px; gap: 2px; text-align: left; }
 .account-copy strong { max-width: 92px; overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .account-copy small { font-size: 9px; color: #959da9; }

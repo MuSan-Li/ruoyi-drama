@@ -1,0 +1,2 @@
+# Keep the pinned upstream skill bytes identical to its source manifest.
+skills/smy-seedance-storyboard/upstream/** -text
