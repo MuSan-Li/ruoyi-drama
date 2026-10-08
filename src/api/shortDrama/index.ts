@@ -74,8 +74,8 @@ export function saveShortDramaScript(data: ShortDramaScript) {
 }
 
 /** 按修改意见重新生成固定格式剧本 */
-export function polishScript(projectId: SnowflakeId, instruction: string) {
-  return unwrap(post<ShortDramaDetail>(`/short-drama/${projectId}/polish-script`, { instruction }, { timeout: 600000 }).json());
+export function polishScript(projectId: SnowflakeId, instruction: string, model?: string) {
+  return unwrap(post<ShortDramaDetail>(`/short-drama/${projectId}/polish-script`, { instruction, model }, { timeout: 600000 }).json());
 }
 
 /** Phase 2: 资产分析 */

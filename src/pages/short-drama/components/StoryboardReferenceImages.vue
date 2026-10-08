@@ -3,11 +3,13 @@ import { computed, onUnmounted, shallowRef, useSlots, watch } from 'vue';
 import type { ShortDramaCharacter, ShortDramaLocation, ShortDramaStoryboard } from '@/api/shortDrama/types';
 import { readShortDramaResource } from '@/api/shortDrama/resources';
 import { selectStoryboardAppearance } from '@/utils/storyboardAppearance';
+import { storyboardPropNames } from '@/utils/storyboardPropReferences';
 import GeneratedAssetImage from './GeneratedAssetImage.vue';
 
 interface PropAsset {
   id: string; kind: string; title: string; status: string;
   imageUrl?: string; model?: string; predictionId?: string;
+  shotNumbers?: number[];
 }
 interface ReferenceImage {
   key: string; title: string; kind: '角色' | '场景' | '道具';
@@ -38,12 +40,13 @@ function selectedUrl(urls: string[], index?: number): string | undefined {
   return urls[index != null && index >= 0 && index < urls.length ? index : 0];
 }
 
-// Match the same explicit visible_props binding used by keyframe and video generation.
-const propNames = computed<string[]>(() => {
+// Use the same explicit-name priority and legacy shot-number fallback as generation.
+const visibleProps = computed(() => {
   const continuity = parse(props.shot.continuityJson) as { visible_props?: unknown } | null;
-  const names = continuity?.visible_props;
-  return Array.isArray(names) ? [...new Set(names.filter((name): name is string => typeof name === 'string' && !!name))] : [];
+  return continuity?.visible_props;
 });
+const needsPropLookup = computed(() => !Array.isArray(visibleProps.value) || visibleProps.value.length > 0);
+const propNames = computed(() => storyboardPropNames(visibleProps.value, props.shot.sceneNo, propAssets.value));
 const references = computed<ReferenceImage[]>(() => {
   const result: ReferenceImage[] = [];
   const cast = parse(props.shot.charactersJson);
@@ -73,7 +76,7 @@ const missingProps = computed(() => propNames.value.filter(name => !references.v
 
 async function refresh(version = epoch) {
   clearTimeout(timer);
-  if (!propNames.value.length) { loading.value = false; return; }
+  if (!needsPropLookup.value) { loading.value = false; return; }
   loading.value = true;
   error.value = '';
   try {
@@ -88,7 +91,7 @@ async function refresh(version = epoch) {
     if (version === epoch) loading.value = false;
   }
 }
-watch(() => [props.projectId, JSON.stringify(propNames.value)], () => {
+watch(() => [props.projectId, props.shot.sceneNo, JSON.stringify(visibleProps.value)], () => {
   epoch++;
   clearTimeout(timer);
   propAssets.value = [];
@@ -99,7 +102,7 @@ onUnmounted(() => { epoch++; clearTimeout(timer); });
 </script>
 
 <template>
-  <section v-if="references.length || propNames.length || hasMaterialSlot" class="storyboard-ref-images" aria-label="本镜参考图">
+  <section v-if="references.length || propNames.length || error || hasMaterialSlot" class="storyboard-ref-images" aria-label="本镜参考图">
     <span class="ref-label">参考图：</span>
     <div class="references-body">
       <div class="ref-imgs-row">
@@ -112,11 +115,12 @@ onUnmounted(() => { epoch++; clearTimeout(timer); });
           <figcaption class="reference-title">道具 · {{ name }}</figcaption>
         </figure>
       </div>
+      <p v-if="error" class="reference-error" role="alert">{{ error }}</p>
       <div v-if="hasMaterialSlot" class="reference-material">
         <slot name="material" />
       </div>
     </div>
-    <el-button v-if="propNames.length" text size="small" :loading="loading" @click="refresh()">{{ error ? '重新读取' : '刷新参考图' }}</el-button>
+    <el-button v-if="propNames.length || error" text size="small" :loading="loading" @click="refresh()">{{ error ? '重新读取' : '刷新参考图' }}</el-button>
   </section>
 </template>
 
@@ -132,4 +136,5 @@ onUnmounted(() => { epoch++; clearTimeout(timer); });
 .prop-reference .reference-title { color:#2563eb; font-weight:600; }
 .reference-placeholder { display:grid; place-items:center; height:72px; margin-top:10px; border-radius:6px; background:var(--drama-image-surface); color:var(--drama-text-tertiary); font-size:12px; }
 .reference-material { margin-top:10px; }
+.reference-error { margin:8px 0 0; color:var(--el-color-danger); font-size:12px; }
 </style>

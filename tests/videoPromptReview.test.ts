@@ -15,6 +15,18 @@ const silent = `【参考与边界】参考首帧、朱承晏定妆图，太子�
 【约束】不新增人物、字幕；保留轴线。`;
 const base = { videoPrompt: silent, durationSeconds: 4, locationName: '太子书斋', charactersJson: '[{"name":"朱承晏"}]' };
 
+test('doorway review flags missing geography but accepts entry with an outward-opening door', () => {
+  const vague = { videoPrompt: '旧库房，中景跟拍，周慎推门进屋。冷灰天光，只有脚步声，无对白。', sourceText: '周慎推门进屋。', locationName: '旧库房', charactersJson: '["周慎"]' };
+  assert.equal(reviewVideoPrompt(vague).issues.filter(issue => issue.includes('进出门动作')).length, 3);
+  const entry = '旧库房，周慎起初站在门外，中景固定机位，镜头在门外院内。周慎把门向外拉开让到一旁，再迈步跨过门槛进入屋内，站到炮旁。冷灰天光，只有脚步声，无对白。';
+  const exit = '旧库房，周慎起初站在屋内，中景固定机位，摄影机在门内。周慎迈步跨过门槛走出屋外，钥匙仍挂在腰间。冷灰天光，只有脚步声，无对白。';
+  for (const videoPrompt of [entry, exit]) assert.deepEqual(reviewVideoPrompt({ ...vague, videoPrompt }).issues, []);
+  for (const sourceText of ['周慎打开柜门。', '周慎站在门外守候。', '周慎说：「先进屋再说。」']) {
+    const issues = reviewVideoPrompt({ ...vague, sourceText, videoPrompt: '周慎在院中中景固定，低头摸钥匙，冷灰天光，环境声是风声。' + sourceText }).issues;
+    assert.equal(issues.filter(issue => issue.includes('进出门动作')).length, 0);
+  }
+});
+
 test('brief dialogue needs a reason for a twelve-second allocation, even with padded action budgets', () => {
   const shot = { ...base, durationSeconds: 12, sourceText: '老者：「大人可算醒了！南门来了溃兵要抢粮！」',
     continuityJson: JSON.stringify({ timing: { speech_rate: 3.8, action_seconds: 4, pause_seconds: 2 } }) };

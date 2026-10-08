@@ -1,2 +1,5 @@
 # Keep the pinned upstream skill bytes identical to its source manifest.
 skills/smy-seedance-storyboard/upstream/** -text
+
+# Skill manifests and backend distribution compare the original file bytes.
+skills/github-short-drama/** -text

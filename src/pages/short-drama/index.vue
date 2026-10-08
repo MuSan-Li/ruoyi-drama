@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import StoryboardReferenceImages from './components/StoryboardReferenceImages.vue';
 import DramaProductionSkills from './components/DramaProductionSkills.vue';
+import AssetVisualStyle from './components/AssetVisualStyle.vue';
+import ShotEditorHeader from './components/ShotEditorHeader.vue';
+import ShotGenerationSettings from './components/ShotGenerationSettings.vue';
 import ShotDesignCard from './components/ShotDesignCard.vue';
 import StoryboardGenerationBoard from './components/StoryboardGenerationBoard.vue';
 import { useStoryboardPlanning } from '@/composables/useStoryboardPlanning';
@@ -23,9 +26,8 @@ import { isLocalVideoTask, isUnresolvedVideoTask, videoSubmissionRecoveryAllowed
 import { ShortDramaResponseError } from '@/utils/shortDramaResponse';
 import { requireAnalyzedAssets } from '@/utils/shortDramaAssetAnalysis';
 import ContinuityReview from './components/ContinuityReview.vue';
-import ShotVideoResolution from './components/ShotVideoResolution.vue';
-import ShotVideoDuration from './components/ShotVideoDuration.vue';
-import ShotVideoStartFrame from './components/ShotVideoStartFrame.vue';
+import ShotVideoReferences from './components/ShotVideoReferences.vue';
+import { storyboardVideoModel } from '@/utils/storyboardVideoModel';
 import { videoSecondsIssue } from '@/utils/videoDuration';
 import VisualAssetCoverage from './components/VisualAssetCoverage.vue';
 import FixedPropEditor from './components/FixedPropEditor.vue';
@@ -35,6 +37,9 @@ import GeneratedAssetImage from './components/GeneratedAssetImage.vue';
 import ShotSourceMaterial from './components/ShotSourceMaterial.vue';
 import ShotNavigator from './components/ShotNavigator.vue';
 import ScriptGenerationPanel from './components/ScriptGenerationPanel.vue';
+import ScriptReader from './components/ScriptReader.vue';
+import VideoPromptEditor from './components/VideoPromptEditor.vue';
+import { formatScriptText } from '@/utils/scriptFormatting';
 import { useScriptCreation } from '@/composables/useScriptCreation';
 import { reviewShot } from './shotReview';
 /*
@@ -200,6 +205,7 @@ let viewMounted = true;
 const savingScript = ref(false);
 const workflowFailureMessage = ref('');
 const polishingScript = ref(false);
+const scriptEditing = ref(false);
 const generatingVideo = ref<Record<SnowflakeId, boolean>>({});
 const videoSubmissions = useStoryboardVideoSubmission();
 const videoQueryHints = ref<Record<SnowflakeId, string>>({});
@@ -229,6 +235,7 @@ const ideaForm = ref({
   artStyle: 'script-tone',
   aestheticSkillName: '',
   directorSkillName: '',
+  storyboardSkillNames: [] as string[],
   videoModel: '',
   imageModel: '',
   audioModel: '',
@@ -286,17 +293,36 @@ function skillProjectPayload() {
 async function persistProjectSkills() {
   const projectId = currentProjectId.value;
   if (!projectId || detail.value?.project.id !== projectId) throw new Error('当前项目尚未确认，请重新加载');
-  if (!skillBindingState.value.ready && !skillCatalogLoaded.value) await refreshSkillCatalog();
+  if (!skillCatalogLoaded.value) await refreshSkillCatalog();
   if (!skillBindingState.value.ready) throw new Error(skillBindingState.value.reason);
   const wanted = skillProjectPayload();
   await saveShortDramaProject({ id: projectId, projectName: detail.value.project.projectName, ...wanted });
   const updated = await getShortDramaDetail(projectId);
   const actual = projectSkillBindings(updated.project);
-  if (actual.aestheticSkillName !== wanted.aestheticSkillName || actual.directorSkillName !== wanted.directorSkillName) throw new Error('制作技能保存结果未确认，请回读检查');
+  if (dramaSkillBindingsChanged(actual, wanted)) throw new Error('制作技能保存结果未确认，请回读检查');
   if (currentProjectId.value === projectId && detail.value) {
     detail.value.project = updated.project;
     ideaForm.value.artStyle = updated.project.artStyle || ideaForm.value.artStyle;
   }
+}
+
+const savingAssetStyle = ref(false);
+async function changeAssetVisualStyle(name: string) {
+  const projectId = currentProjectId.value;
+  if (!projectId || !detail.value || savingAssetStyle.value) return;
+  savingAssetStyle.value = true;
+  try {
+    await saveShortDramaProject({ id: projectId, projectName: detail.value.project.projectName,
+      aestheticSkillName: name, ...(!name ? { artStyle: 'script-tone' } : {}) });
+    const updated = await getShortDramaDetail(projectId);
+    if ((updated.project.aestheticSkillName || '') !== name) throw new Error('视觉风格保存结果未确认，请重新读取项目');
+    if (currentProjectId.value === projectId && detail.value) {
+      detail.value.project = updated.project;
+      ideaForm.value.aestheticSkillName = updated.project.aestheticSkillName || '';
+      ideaForm.value.artStyle = updated.project.artStyle || 'script-tone';
+    }
+  } catch (failure) { ElMessage.error(failure instanceof Error ? failure.message : '视觉风格保存失败'); }
+  finally { savingAssetStyle.value = false; }
 }
 
 const CREATIVE_DRAFT_KEY = 'ruoyi-drama:creative-draft-recovery';
@@ -354,6 +380,7 @@ function workflowRequestSummary() {
     model: ideaForm.value.model, artStyle: ideaForm.value.artStyle, aspectRatio: ideaForm.value.videoRatio,
     ...projectSkillBindings(ideaForm.value),
     ideaCharacters: ideaForm.value.idea.length,
+    storyboardSkillNames: ideaForm.value.storyboardSkillNames.join(','),
     scriptCharacters: scriptForm.value.scriptText?.length || 0,
   };
 }
@@ -408,17 +435,7 @@ function extractNarration(scriptText: string): string {
 }
 
 function normalizePlainScriptText(value?: string): string {
-  return (value || '')
-    .replace(/\r\n?/g, '\n')
-    .replace(/^\s*```[^\n]*$/gm, '')
-    .replace(/^\s{0,3}#{1,6}\s*/gm, '')
-    .replace(/^\s{0,3}>\s?/gm, '')
-    .replace(/^\s*[-+*]\s+(?=\S)/gm, '')
-    .replace(/\*\*([^*\n]+)\*\*/g, '$1')
-    .replace(/__([^_\n]+)__/g, '$1')
-    .replace(/[ \t]+$/gm, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  return formatScriptText(value);
 }
 
 async function handleGenerateNarration() {
@@ -568,6 +585,7 @@ async function loadDetail(projectId: SnowflakeId) {
   ideaForm.value.idea = res.project.originalIdea || '';
   ideaForm.value.artStyle = res.project.artStyle || 'script-tone';
   Object.assign(ideaForm.value, projectSkillBindings(res.project));
+  ideaForm.value.storyboardSkillNames = res.project.storyboardSkillNames || [];
   if (videoRatioOptions.some(item => item.value === res.project?.composeAspectRatio)) {
     ideaForm.value.videoRatio = res.project.composeAspectRatio!;
   }
@@ -733,14 +751,14 @@ async function handlePolishScript() {
   preserveCreativeDraft();
   try {
     await persistCurrentScript();
-    const res: any = await polishScript(currentProjectId.value, instruction);
+    const res: any = await polishScript(currentProjectId.value, instruction, ideaForm.value.model || undefined);
     if (res.script) scriptForm.value = { ...res.script, scriptText: normalizePlainScriptText(res.script.scriptText) };
     if (res.project) {
       await saveShortDramaProject(res.project);
     }
     await loadDetail(currentProjectId.value);
     scriptRevisionInstruction.value = '';
-    ElMessage.success('已按修改意见重新生成剧本');
+    ElMessage.success('已按所选技能和修改意见生成新剧本版本');
   } finally { polishingScript.value = false; }
 }
 
@@ -989,10 +1007,24 @@ function formatVideoDuration(seconds?: number | string) {
 
 function storyboardVideoPreviewSource(item: ShortDramaStoryboard) {
   if (item.videoUrl?.startsWith('/short-drama/')) return item.videoUrl;
-  if (!item.videoId || !ideaForm.value.videoModel) return '';
-  const model = videoModels.value.find(entry => entry.modelName === ideaForm.value.videoModel);
+  const modelName = videoSubmissions.pending(item)?.model || videoModelFor(item);
+  if (!item.videoId || !modelName) return '';
+  const model = videoModels.value.find(entry => entry.modelName === modelName);
   if (model?.providerCode !== 'atlas') return '';
-  return `/media/content?${new URLSearchParams({ model: ideaForm.value.videoModel, predictionId: item.videoId })}`;
+  return `/media/content?${new URLSearchParams({ model: modelName, predictionId: item.videoId })}`;
+}
+
+function videoModelFor(item: ShortDramaStoryboard) {
+  return storyboardVideoModel(item.continuityJson, ideaForm.value.videoModel);
+}
+
+function videoModelAvailable(item: ShortDramaStoryboard) {
+  return videoModels.value.some(model => model.modelName === videoModelFor(item));
+}
+
+function videoResolutionSupported(item: ShortDramaStoryboard) {
+  const model = videoModelFor(item);
+  return model.startsWith('bytedance/seedance-2.0-mini/') || model.startsWith('bytedance/seedance-2.5/');
 }
 
 function videoGenerationIssues(item: ShortDramaStoryboard) {
@@ -1063,13 +1095,13 @@ async function handleGenerateVideo(item: ShortDramaStoryboard, regenerate = fals
   const issues = videoGenerationIssues(item);
   if (issues.length) { ElMessage.warning(`镜 ${item.sceneNo} 未通过生成审阅：${issues.slice(0, 3).join('；')}`); return false; }
   if (detail.value?.project.status === 'script_changed') { ElMessage.warning('剧本已修改，请重新生成分镜'); return false; }
-  if (!ideaForm.value.videoModel) { ElMessage.warning('后台尚未配置可用的视频模型'); return false; }
+  if (!videoModelAvailable(item)) { ElMessage.warning('本镜所选视频模型未配置，请重新选择'); return false; }
   if (composeBusy.value) { ElMessage.warning('成片正在合成，请稍后再生成分镜视频'); return false; }
   generatingVideo.value[item.id] = true;
   let submissionStarted = false;
   try {
     if (saveDraft) Object.assign(item, await saveShortDramaStoryboard(item));
-    const record = videoSubmissions.begin(item, ideaForm.value.videoModel, regenerate);
+    const record = videoSubmissions.begin(item, videoModelFor(item), regenerate);
     delete videoSubmissionReceipts.value[item.id];
     submissionStarted = true;
     invalidateComposeView();
@@ -1138,7 +1170,7 @@ function startPolling(item: ShortDramaStoryboard) {
   const id = item.id;
   stopPolling(id);
   const startedAt = Date.now();
-  const pollingModel = videoSubmissions.pending(item)?.model || ideaForm.value.videoModel;
+  const pollingModel = videoSubmissions.pending(item)?.model || videoModelFor(item);
   let checking = false;
   pollingTimers.value[id] = setInterval(async () => {
     if (!pollingModel) { stopPolling(id); return; }
@@ -1172,7 +1204,7 @@ function startPolling(item: ShortDramaStoryboard) {
 /** 手动查询视频进度 */
 async function handleCheckVideoProgress(item: ShortDramaStoryboard) {
   if (!item.id) return;
-  const model = videoSubmissions.pending(item)?.model || ideaForm.value.videoModel;
+  const model = videoSubmissions.pending(item)?.model || videoModelFor(item);
   if (!model) { ElMessage.warning('请先选择原提交视频模型'); return; }
   try {
     const receipt = await refreshVideoSubmissionReceipt(item);
@@ -1214,12 +1246,13 @@ async function generateVideoBatch(candidates: ShortDramaStoryboard[], range?: { 
   const selected = candidates.filter(shot => !isDirectMaterial(shot) && shot.videoStatus !== 'done' && !videoSubmissionBlocked(shot));
   if (!selected.length) { ElMessage.info('所选镜头已完成、正在生成或提交结果待确认'); return; }
   if (detail.value?.project.status === 'script_changed') { ElMessage.warning('剧本已修改，请重新生成分镜'); return; }
-  if (!ideaForm.value.videoModel) { ElMessage.warning('后台尚未配置可用的视频模型'); return; }
+  if (selected.some(shot => !videoModelAvailable(shot))) { ElMessage.warning('所选范围有未配置的视频模型，请检查逐镜选择'); return; }
+  const model = videoModelFor(selected[0]);
+  if (selected.some(shot => videoModelFor(shot) !== model)) { ElMessage.warning('本批镜头采用不同视频模型，请按模型分别生成'); return; }
   const invalid = selected.find(shot => videoGenerationIssues(shot).length);
   if (invalid) { ElMessage.warning(`镜 ${invalid.sceneNo} 未通过生成审阅：${videoGenerationIssues(invalid).slice(0, 3).join('；')}`); return; }
   generatingAllVideos.value = true;
   const projectId = currentProjectId.value;
-  const model = ideaForm.value.videoModel;
   try {
     // 起始帧是可选的：服务端会优先使用上传帧、已审阅帧，再回退到角色、场景和道具参考。
     if (currentProjectId.value !== projectId) return;
@@ -1946,18 +1979,26 @@ function isDirectMaterial(item: ShortDramaStoryboard) {
             <el-form-item label="剧情大纲">
               <el-input v-model="scriptForm.outlineText" type="textarea" :autosize="{ minRows: 7, maxRows: 14 }" placeholder="剧情大纲" />
             </el-form-item>
-            <el-form-item label="剧本正文（纯文本固定格式）">
-              <el-input v-model="scriptForm.scriptText" type="textarea" :autosize="{ minRows: 14, maxRows: 28 }" placeholder="剧本正文" />
+            <el-form-item label="剧本正文">
+              <div style="width:100%">
+                <el-button text @click="scriptEditing = !scriptEditing">{{ scriptEditing ? '阅读剧本' : '编辑剧本' }}</el-button>
+                <el-input v-if="scriptEditing" v-model="scriptForm.scriptText" type="textarea" :autosize="{ minRows: 14, maxRows: 28 }" placeholder="剧本正文" />
+                <ScriptReader v-else :text="scriptForm.scriptText" />
+              </div>
             </el-form-item>
             <el-form-item v-if="scriptRefinementOpen" label="修改意见">
               <el-input v-model="scriptRevisionInstruction" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" placeholder="例如：删掉现代开场；强化匪寇压境；保留炮击高潮；对白更口语化。" />
             </el-form-item>
+            <el-form-item label="制作与修订要求">
+              <el-input v-model="scriptForm.revisionNotes" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" aria-label="制作与修订要求" placeholder="例如：整集按原剧本重新分镜，保留对白；沿用已确认的角色形象，重设计候选暂不选用。保存剧本后用于后续生成。" />
+            </el-form-item>
           </el-form>
         </div>
+        <DramaProductionSkills v-if="scriptRefinementOpen" v-model:aesthetic="ideaForm.aestheticSkillName" v-model:director="ideaForm.directorSkillName" v-model:storyboard-skills="ideaForm.storyboardSkillNames" stage="script" :disabled="polishingScript || regeneratingStoryboard || composeBusy" />
         <div class="step-actions">
           <el-button @click="activeStep = 'idea'">上一步</el-button>
           <el-button :disabled="polishingScript" @click="scriptRefinementOpen = !scriptRefinementOpen"><el-icon><MagicStick /></el-icon>打磨剧本</el-button>
-          <el-button v-if="scriptRefinementOpen" type="primary" :loading="polishingScript" :disabled="!scriptRevisionInstruction.trim()" @click="handlePolishScript">按意见打磨</el-button>
+          <el-button v-if="scriptRefinementOpen" type="primary" :loading="polishingScript" :disabled="!scriptRevisionInstruction.trim()" @click="handlePolishScript">按所选技能和意见重写</el-button>
           <el-button :loading="savingScript" :disabled="!hasProject" @click="handleSaveScript">保存剧本</el-button>
           <el-button type="primary" :loading="analyzingAssets" :disabled="!scriptForm.id" @click="handleAnalyzeAssets">
             保存并分析资产
@@ -1968,13 +2009,15 @@ function isDirectMaterial(item: ShortDramaStoryboard) {
       <!-- ====== Step 03: Assets ====== -->
       <section v-if="activeStep === 'assets' && hasProject" class="form-step-panel">
         <AssetGenerationBoard v-if="assetJob && (analyzingAssets || assetJob.state === 'error' || assetJob.queryError)" :job="assetJob" :now="assetNow" :querying="assetQuerying" @query="assetAnalysis.query()" />
-        <div v-show="!analyzingAssets">
+        <div v-show="!analyzingAssets" v-loading="savingAssetStyle" :inert="savingAssetStyle || undefined">
         <StudioSection title="资产配置">
           <template #actions>
             <el-button type="primary" :loading="generatingAssetBatch" :disabled="!selectedImageModel || visualAssetCoverageRef?.running" @click="handleGenerateMissingAssets">一键生成</el-button>
             <FixedPropEditor v-if="currentProjectId" :project-id="currentProjectId" :image-model="selectedImageModel" @saved="visualAssetCoverageRef?.refresh()" />
           </template>
         </StudioSection>
+
+        <AssetVisualStyle :aesthetic="ideaForm.aestheticSkillName" v-model:image-model="ideaForm.imageModel" :models="imageModels" :saving="savingAssetStyle" :disabled="generatingAssetBatch || visualAssetCoverageRef?.running" @select="changeAssetVisualStyle" />
 
         <el-tabs v-model="assetCategoryTab" class="asset-category-tabs">
 
@@ -2151,7 +2194,6 @@ function isDirectMaterial(item: ShortDramaStoryboard) {
           </el-tab-pane>
         </el-tabs>
 
-        <DramaProductionSkills v-if="!storyboardDrafts.length" v-model:aesthetic="ideaForm.aestheticSkillName" v-model:director="ideaForm.directorSkillName" director-only :disabled="regeneratingStoryboard || composeBusy" />
         <div class="step-actions">
           <el-button @click="activeStep = 'script'">上一步</el-button>
           <el-button :loading="analyzingAssets" :disabled="!scriptForm.id" @click="handleAnalyzeAssets">
@@ -2166,6 +2208,9 @@ function isDirectMaterial(item: ShortDramaStoryboard) {
 
       <!-- ====== Step 04: Storyboard ====== -->
       <section v-if="activeStep === 'storyboard' && hasProject" class="form-step-panel storyboard-panel">
+        <DramaProductionSkills v-model:aesthetic="ideaForm.aestheticSkillName" v-model:director="ideaForm.directorSkillName" v-model:storyboard-skills="ideaForm.storyboardSkillNames" :disabled="regeneratingStoryboard || composeBusy">
+          <template #actions><el-button :loading="regeneratingStoryboard" :disabled="!scriptForm.id || composeBusy || analyzingAssets" @click="handleGenerateStoryboard">按所选技能重新分镜</el-button></template>
+        </DramaProductionSkills>
         <StoryboardGenerationBoard v-if="storyboardJob && (regeneratingStoryboard || storyboardJob.state === 'error' || storyboardJob.queryError)" :job="storyboardJob" :now="storyboardNow" :querying="storyboardQuerying" :can-retry="!composeBusy && !analyzingAssets" @query="storyboardPlanning.query()" @retry="handleGenerateStoryboard" />
         <template v-if="!regeneratingStoryboard">
         <div v-if="showStoryboardAuxiliaryTools" class="section-head storyboard-section-head" :class="{ collapsed: storyboardToolsCollapsed }">
@@ -2314,25 +2359,15 @@ function isDirectMaterial(item: ShortDramaStoryboard) {
           <ShotNavigator v-model:version="selectedVersionId" :shots="workspaceStoryboards" :selected="selectedShotId" :versions="storyboardVersions" :disabled="storyboardStructureChanging || composeBusy" @select="selectShot" />
           <div class="storyboard-list">
           <article v-for="item in visibleStoryboards" :key="item.id ?? item.sceneNo" class="storyboard-card">
-            <div class="shot-pager"><el-button size="small" :disabled="!adjacentShots.before" @click="selectShot(storyboardKey(adjacentShots.before!))">上一镜</el-button><span>{{ selectedShotIndex + 1 }} / {{ workspaceStoryboards.length }}</span><el-button size="small" :disabled="!adjacentShots.after" @click="selectShot(storyboardKey(adjacentShots.after!))">下一镜</el-button></div>
-            <div class="shot-edit-toolbar">
-              <div class="scene-no-badge">镜头 {{ item.sceneNo }}</div>
-              <div class="shot-edit-actions">
-                <el-button type="primary" plain :disabled="storyboardStructureChanging || composeBusy" @click="handleAddStoryboard(item)">新增镜头</el-button>
-                <el-button type="danger" plain :disabled="storyboardStructureChanging || composeBusy || videoSubmissionBlocked(item)" @click="handleDeleteStoryboard(item)">删除镜头</el-button>
-              </div>
-            </div>
+            <ShotEditorHeader v-model:title="item.sceneTitle" :scene-no="item.sceneNo" :index="selectedShotIndex" :total="workspaceStoryboards.length" :has-previous="!!adjacentShots.before" :has-next="!!adjacentShots.after" :disabled="storyboardStructureChanging || composeBusy" :delete-disabled="videoSubmissionBlocked(item)" @previous="selectShot(storyboardKey(adjacentShots.before!))" @next="selectShot(storyboardKey(adjacentShots.after!))" @add="handleAddStoryboard(item)" @delete="handleDeleteStoryboard(item)" />
 
-            <el-input v-model="item.sceneTitle" placeholder="镜头标题" class="scene-title-input" />
-
-            <ShotVideoResolution v-if="ideaForm.videoModel?.startsWith('bytedance/seedance-2.5/')" :continuity-json="item.continuityJson" :disabled="composeBusy || videoSubmissionBlocked(item)" @update="item.continuityJson = $event" />
-            <ShotVideoDuration :continuity-json="item.continuityJson" :disabled="composeBusy || videoSubmissionBlocked(item)" @update="item.continuityJson = $event" />
-            <ShotVideoStartFrame :continuity-json="item.continuityJson" :disabled="composeBusy || videoSubmissionBlocked(item)" @update="item.continuityJson = $event" />
-            <ShotCharacterVoices v-if="currentProjectId && item.id" :project-id="String(currentProjectId)" :shot="item" :characters="characters" :model="ideaForm.videoModel" :disabled="composeBusy || videoSubmissionBlocked(item)" @update="item.continuityJson = $event" />
+            <ShotGenerationSettings :continuity-json="item.continuityJson" :models="videoModels" :model="videoModelFor(item)" :fallback="ideaForm.videoModel" :supports-resolution="videoResolutionSupported(item)" :disabled="composeBusy || videoSubmissionBlocked(item)" @update="item.continuityJson = $event">
+              <ShotVideoReferences v-if="currentProjectId" :project-id="String(currentProjectId)" :continuity-json="item.continuityJson" :model="videoModelFor(item)" :disabled="composeBusy || videoSubmissionBlocked(item)" @update="item.continuityJson = $event" />
+              <ShotCharacterVoices v-if="currentProjectId && item.id" :project-id="String(currentProjectId)" :shot="item" :characters="characters" :model="videoModelFor(item)" :disabled="composeBusy || videoSubmissionBlocked(item)" @update="item.continuityJson = $event" />
+            </ShotGenerationSettings>
             <div class="video-prompt-field">
               <ShotDesignCard :continuity-json="item.continuityJson" />
-              <span class="video-prompt-label">视频提示词</span>
-              <el-input v-model="item.videoPrompt" type="textarea" :autosize="{ minRows: 8, maxRows: 24 }" aria-label="视频提示词" placeholder="按镜头顺序描述构图、动作与反应，将人物原台词和声音写入对应动作中" />
+              <VideoPromptEditor v-model="item.videoPrompt" :disabled="composeBusy || videoSubmissionBlocked(item)" />
             </div>
 
             <!-- Reference Images -->
@@ -2351,14 +2386,14 @@ function isDirectMaterial(item: ShortDramaStoryboard) {
                   type="danger"
                   plain
                   :loading="generatingVideo[item.id ?? '']"
-                  :disabled="!ideaForm.videoModel || composeBusy || videoSubmissionBlocked(item)"
+                  :disabled="!videoModelAvailable(item) || composeBusy || videoSubmissionBlocked(item)"
                   @click="handleRetryVideo(item)"
                 >
                   重新生成视频
                 </el-button>
                 <el-tag v-else-if="isDirectMaterial(item)" size="small">素材插入</el-tag>
-                <el-tooltip v-else :disabled="!!ideaForm.videoModel && !videoSubmissionBlocked(item)" :content="!ideaForm.videoModel ? '后台尚未配置可用的视频模型' : '已有请求待确认，请先查询状态'">
-                  <el-button size="small" type="primary" :loading="generatingVideo[item.id ?? '']" :disabled="videoSubmissionBlocked(item) || !ideaForm.videoModel || composeBusy" @click="handleGenerateVideo(item, item.videoStatus === 'done')">
+                <el-tooltip v-else :disabled="videoModelAvailable(item) && !videoSubmissionBlocked(item)" :content="!videoModelAvailable(item) ? '本镜所选视频模型未配置' : '已有请求待确认，请先查询状态'">
+                  <el-button size="small" type="primary" :loading="generatingVideo[item.id ?? '']" :disabled="videoSubmissionBlocked(item) || !videoModelAvailable(item) || composeBusy" @click="handleGenerateVideo(item, item.videoStatus === 'done')">
                     {{ item.videoStatus === 'done' ? '重新生成视频' : '生成视频' }}
                   </el-button>
                 </el-tooltip>
@@ -2596,11 +2631,11 @@ p { margin-top: 6px; font-size: 13px; line-height: 1.65; color: var(--drama-text
 }
 @media(max-width:1000px) { .short-drama-page { grid-template-columns: 190px minmax(0,1fr); }.storyboard-workspace { grid-template-columns: 165px minmax(0,1fr); } }
 @media(max-width:1100px) { .storyboard-workspace { grid-template-columns: minmax(0,1fr); } }
-.storyboard-card { min-width: 0; align-content: start; padding: 18px; background: var(--drama-surface-muted); border: 1px solid #e5e7eb; border-radius: 8px; display: grid; gap: 12px; }
+.storyboard-card { container: shot-editor / inline-size; min-width: 0; align-content: start; padding: 22px; background: var(--drama-surface); border: 1px solid var(--drama-border); border-radius: 12px; display: grid; gap: 20px; }
 .scene-no-badge { font-size: 14px; font-weight: 750; color: var(--drama-text); }
 .scene-title-input { margin-top: 2px; }
-.video-prompt-field { display: grid; gap: 6px; min-width: 0; }
-.video-prompt-label { color: #475569; font-size: 13px; font-weight: 650; }
+.video-prompt-field { display: grid; gap: 11px; min-width: 0; }
+@media (max-width: 640px) { .storyboard-card { padding: 16px; } }
 
 .guidance-json-editor :deep(.el-textarea__inner) { font-family: Consolas, 'Courier New', monospace; font-size: 12px; }
 

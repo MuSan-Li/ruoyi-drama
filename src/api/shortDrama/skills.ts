@@ -9,9 +9,9 @@ function skillData<T>(response: SkillPayload<T>): T {
   return response as T;
 }
 
-export async function listShortDramaSkills(type: ShortDramaSkillType, includeDisabled = true): Promise<ShortDramaSkill[]> {
+export async function listShortDramaSkills(type?: ShortDramaSkillType, includeDisabled = true): Promise<ShortDramaSkill[]> {
   // Optional picker data reports errors locally; it must not flash a global error for the default direction.
-  const skills = await readShortDramaResource<ShortDramaSkill[]>(`/short-drama/skills?type=${type}&includeDisabled=${includeDisabled}`);
+  const skills = await readShortDramaResource<ShortDramaSkill[]>(`/short-drama/skills?includeDisabled=${includeDisabled}${type ? `&type=${type}` : ''}`);
   if (!Array.isArray(skills)) throw new Error('技能列表未返回，请检查后台技能服务');
   return skills as ShortDramaSkill[];
 }
@@ -25,6 +25,20 @@ export async function getShortDramaSkill(name: string): Promise<ShortDramaSkillD
 
 export interface DramaMarketEntry extends Omit<ShortDramaSkillDetail, 'type'> {
   type: 'system' | 'production' | ShortDramaSkillType;
+}
+
+export interface DramaSkillCategory {
+  type: DramaMarketEntry['type'];
+  title: string;
+  editable: boolean;
+  projectSelectable: boolean;
+}
+
+export async function listDramaSkillCategories(): Promise<DramaSkillCategory[]> {
+  const response = await get<SkillPayload<DramaSkillCategory[]>>('/short-drama/skills/categories').json();
+  const categories = skillData(response);
+  if (!Array.isArray(categories)) throw new Error('短剧技能分类未返回，请检查后台服务');
+  return categories;
 }
 
 export async function listDramaSkillMarket(): Promise<DramaMarketEntry[]> {

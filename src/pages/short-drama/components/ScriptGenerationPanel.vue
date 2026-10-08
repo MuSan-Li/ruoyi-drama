@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onScopeDispose, ref } from 'vue';
 import type { ScriptCreationJob } from '@/utils/scriptCreationProgress';
+import ScriptReader from './ScriptReader.vue';
 
 const props = defineProps<{ job: ScriptCreationJob }>();
 const now = ref(Date.now());
@@ -22,7 +23,7 @@ const stalled = computed(() => props.job.state === 'running' && (silence.value ?
       <span v-if="job.state === 'running'">{{ silence === null ? '等待模型首次输出' : `最近输出 ${silence} 秒前` }}</span>
     </div>
     <p v-if="stalled" class="generation-delay">等待模型返回</p>
-    <div class="script-paper"><pre v-if="job.text">{{ job.text }}</pre><div v-else class="script-placeholder"><span class="pulse"></span><i></i><i></i><i></i><i></i></div></div>
+    <div class="script-paper"><ScriptReader v-if="job.text" :text="job.text" /><div v-else class="script-placeholder"><span class="pulse"></span><i></i><i></i><i></i><i></i></div></div>
   </section>
 </template>
 

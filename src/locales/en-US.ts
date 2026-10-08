@@ -150,7 +150,7 @@ const enUS: MessageSchema = {
     refresh: 'Refresh', search: 'Search drama skills and prompts', empty: 'No matching content',
     loadFailed: 'Could not load drama skills', copy: 'Copy content', copied: 'Content copied', copyFailed: 'Copy failed; select the text manually',
     version: 'Version', enabled: 'Enabled', disabled: 'Disabled',
-    categories: { system: 'System prompts', production: 'Production skills', aesthetic: 'Aesthetics', director: 'Directing styles' },
+    categories: { system: 'System prompts', production: 'Production skills', screenwriting: 'Writing styles', aesthetic: 'Visual styles', director: 'Directing styles' },
   },
   layout: {
     skillMarket: 'Skill market',

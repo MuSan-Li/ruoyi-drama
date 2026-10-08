@@ -114,5 +114,14 @@ export function reviewVideoPrompt(shot: VideoPromptShot) {
       }
     }
   }
+  // Spoken requests to enter do not by themselves describe a doorway action.
+  const unquoted = (value: string) => value.replace(/「[^」]*」|“[^”]*”/g, '');
+  const doorAction = unquoted(`${shot.sourceText || ''}\n${content}`);
+  if (/(?:进屋|进门|入库|进入(?:屋|房|库)|走入(?:屋|房|库)|出门|出屋|走出(?:屋|房|库)|跨[^。；\n]{0,10}门槛)/.test(doorAction)) {
+    const staging = unquoted(content);
+    if (!/(?:门外|门内|屋外|屋内|库外|库内|室外|室内)/.test(staging)) add('进出门动作须核对人物起始一侧与抵达位置');
+    if (!/(?:跨[^。；\n]{0,10}门槛|越过门槛|穿过门口|从[^。；\n]{0,24}(?:走入|走出|进入|走到))/.test(staging)) add('进出门动作须写清跨门路线，开门不等于人物已经到位');
+    if (!/(?:摄影机|机位|镜头)[^。；\n]{0,32}(?:门外|门内|屋外|屋内|库外|库内|室外|室内)/.test(staging)) add('进出门动作须说明摄影机所在一侧，门扇方向与人物行进方向分别核对');
+  }
   return { issues, beats, directInsert };
 }

@@ -1,0 +1,672 @@
+[
+  {
+    "repo": "Emily2040/seedance-2.0",
+    "commit": "4668457e560eee06e95d7fcfdf441c8c0bba802e",
+    "stars": 7521,
+    "license": "MIT",
+    "files": [
+      {
+        "path": "LICENSE",
+        "sha256": "c84a6216f6e006b4e4a65e9d056837a61ee9c4ca79f43f386df2992bc690a7f6",
+        "bytes": 1085
+      },
+      {
+        "path": "README.md",
+        "sha256": "c8929b1158c2713f515a85c0327b50db1401a677e8c01c10b5a40662c1a41433",
+        "bytes": 65059
+      },
+      {
+        "path": "SKILL.md",
+        "sha256": "9cc2161b0dad7f0fb75490106eda34f314de503bcadfba515364053cf7bdcd92",
+        "bytes": 29515
+      },
+      {
+        "path": "skills/seedance-antislop/SKILL.md",
+        "sha256": "9db9204157227e3184cc8516c87046e4a37df9d75be894c1e1c1aa8978cf6146",
+        "bytes": 4300
+      },
+      {
+        "path": "skills/seedance-audio/SKILL.md",
+        "sha256": "f163f7bf6f5b075800bef2e03cf313ee9aee9d3c23f135a630bafc8ed92c1245",
+        "bytes": 5372
+      },
+      {
+        "path": "skills/seedance-camera/SKILL.md",
+        "sha256": "1fbc80be6006ba2b9d9b96ba045688e9a8a710d112a93ccd01795ddb619d2628",
+        "bytes": 5157
+      },
+      {
+        "path": "skills/seedance-characters/SKILL.md",
+        "sha256": "f524d24f8f44f0431f8bc553fc7737c6c7bbf5a3d2c17d97016d9f8b0cec9424",
+        "bytes": 4861
+      },
+      {
+        "path": "skills/seedance-continuation/SKILL.md",
+        "sha256": "0b9e354918e555495de5ae720c8fadc6f584681e51efca64a127824ce52005bc",
+        "bytes": 8161
+      },
+      {
+        "path": "skills/seedance-copyright/SKILL.md",
+        "sha256": "00f62eab53c7c1a20df7431b2839d74615c57bc732eafa0aadfae4ee72982afe",
+        "bytes": 3719
+      },
+      {
+        "path": "skills/seedance-examples-ja/SKILL.md",
+        "sha256": "f1ac8498697f40f9a4b78401868bc13a9b3154864f72cfa27c9e357db43618a0",
+        "bytes": 4563
+      },
+      {
+        "path": "skills/seedance-examples-ko/SKILL.md",
+        "sha256": "19633d37bb759c8493d976744906ba2288351718f7fd1c064d3c52d87bdbf919",
+        "bytes": 4598
+      },
+      {
+        "path": "skills/seedance-examples-zh/SKILL.md",
+        "sha256": "51ddd2139b43ad3a272a2ac6347645c98dedf5f48b944f1a741d3e25380fcef2",
+        "bytes": 5084
+      },
+      {
+        "path": "skills/seedance-filter/SKILL.md",
+        "sha256": "8a510514cd44b405fe81794d068120361304bbd565a8d1df37fcd0c6b312e3e5",
+        "bytes": 4546
+      },
+      {
+        "path": "skills/seedance-interview-short/SKILL.md",
+        "sha256": "0a8d99ed110354c9bc6c027e6c55c4064f78712131c2a2e4e6ff57d4573f16f7",
+        "bytes": 6488
+      },
+      {
+        "path": "skills/seedance-interview/SKILL.md",
+        "sha256": "a408e03d7a112884d41950ef93a8cbb6001b92179bf159cfd5c000a1921bb6b5",
+        "bytes": 15421
+      },
+      {
+        "path": "skills/seedance-lighting/SKILL.md",
+        "sha256": "def5981f5d9aa752720e07cc6125425139c29945c82988b082287e273e29001b",
+        "bytes": 4409
+      },
+      {
+        "path": "skills/seedance-motion/SKILL.md",
+        "sha256": "b0c9d4bc9b84f34be6180dc4ecdf28725244d0879b309bbd5bc0f24508bf1a05",
+        "bytes": 5326
+      },
+      {
+        "path": "skills/seedance-pipeline/SKILL.md",
+        "sha256": "d54099c3c65c97fdc7f37346a4298078cd7dc7b0c07038ed2cd47cd2af85c283",
+        "bytes": 3660
+      },
+      {
+        "path": "skills/seedance-prompt-short/SKILL.md",
+        "sha256": "b343aba1f8e85696cfc36335da149ab4c373a52580c062361be57a6a2df856c2",
+        "bytes": 5592
+      },
+      {
+        "path": "skills/seedance-prompt/SKILL.md",
+        "sha256": "3ae6968f00c6c9a9b07dd90c2e9853af4dc568bb5fd5c4840b59c92153104cfb",
+        "bytes": 15096
+      },
+      {
+        "path": "skills/seedance-recipes/SKILL.md",
+        "sha256": "636549cb16360b99191a3d327aefcb5fc0471c37b65b97719cb89fce14763ee9",
+        "bytes": 6142
+      },
+      {
+        "path": "skills/seedance-sequence/SKILL.md",
+        "sha256": "8c8e85ee081ee9cbe73c46a7b0dedd6cf5b7a6627fcdde498f9a46c2b58592ed",
+        "bytes": 10244
+      },
+      {
+        "path": "skills/seedance-style/SKILL.md",
+        "sha256": "da9ca0c0755216f3b0cbfcf796b3c0b31a3d9df85c9ffd614657d658bedcd3e8",
+        "bytes": 4964
+      },
+      {
+        "path": "skills/seedance-troubleshoot/SKILL.md",
+        "sha256": "05d90729cc530c7c98be99f5664a8b9ae208c034f98dfe83bc7b6227c36b24a8",
+        "bytes": 7550
+      },
+      {
+        "path": "skills/seedance-vfx/SKILL.md",
+        "sha256": "dc4d91d1acd543a4f33ea2b938a0fd11db7be8950c8e9e7287667f09b4506979",
+        "bytes": 3248
+      },
+      {
+        "path": "skills/seedance-vocab-en/SKILL.md",
+        "sha256": "7abdd2b47a878ad1be694f300f01af1217ab41e6a6877c2f6e19d7528744a765",
+        "bytes": 4971
+      },
+      {
+        "path": "skills/seedance-vocab-es/SKILL.md",
+        "sha256": "4f073d7e7feebcb9605dbc9a6171f3e0c8671ade63628ed49be8e4024d1a6741",
+        "bytes": 4475
+      },
+      {
+        "path": "skills/seedance-vocab-ja/SKILL.md",
+        "sha256": "28e87b7ed8971df6acabe1348a2a8d0fe9a7123f518b48a4fabdce14cc3a180b",
+        "bytes": 4114
+      },
+      {
+        "path": "skills/seedance-vocab-ko/SKILL.md",
+        "sha256": "28033f3fd73f8ebf2bdfcbc7623d5af18c1a1d5cac775e2457ae067f203f07ec",
+        "bytes": 4116
+      },
+      {
+        "path": "skills/seedance-vocab-ru/SKILL.md",
+        "sha256": "074d483a42c7a1094b2c9e49c2fb44d694fd1e2405f9a9dd9b92d8ca659bd437",
+        "bytes": 5958
+      },
+      {
+        "path": "skills/seedance-vocab-zh/SKILL.md",
+        "sha256": "f6568a49e0c0170dd94381ffe683b497c038bd0d499850e2fb165ce2d572506d",
+        "bytes": 4556
+      }
+    ],
+    "snapshotMode": "licensed-entrypoint-snapshot"
+  },
+  {
+    "repo": "dexhunter/seedance2-skill",
+    "commit": "516284d5bab58361bfdfed3cc96cee3e837d4c44",
+    "stars": 4212,
+    "license": "MIT",
+    "files": [
+      {
+        "path": "LICENSE",
+        "sha256": "56abf51bba5502dcc1cd014c9adea5787cd9eec67421858484b660ec97922978",
+        "bytes": 1072
+      },
+      {
+        "path": "README.md",
+        "sha256": "a8134a64991da32e3f2bb33ad805b012ed7dfc9d427ecfbd5b1923f65bb89c38",
+        "bytes": 1703
+      },
+      {
+        "path": "SKILL.md",
+        "sha256": "107dd9fa5ef46f64d3d5183957244fd42f32a91df57e615ba63338c1344cf442",
+        "bytes": 15337
+      },
+      {
+        "path": "zh/SKILL.md",
+        "sha256": "3ef949443bf7947bd45f53571176602a313df5eec41b7e2a2cb97d54625c6833",
+        "bytes": 17450
+      }
+    ],
+    "snapshotMode": "licensed-entrypoint-snapshot"
+  },
+  {
+    "repo": "eternityspring/shuohao-skills",
+    "commit": "ef4ac0c313c7eeb1f918db5f0f0eb319745900bc",
+    "stars": 4159,
+    "license": "Apache-2.0",
+    "files": [
+      {
+        "path": "LICENSE",
+        "sha256": "b1d2870f1a00e4d7f56576e5f0870cba109e041f8af66866cf5b499478e654e7",
+        "bytes": 11359
+      },
+      {
+        "path": "NOTICE",
+        "sha256": "4a439a29366f485f5ef493a804a4c77a23b41d31eaf97eb66b921e5484bc597d",
+        "bytes": 714
+      },
+      {
+        "path": "README.md",
+        "sha256": "2f7bc319ce325d96d21d4a0711384515ae469e4a821f8072bfd3a794fedc99c5",
+        "bytes": 11155
+      },
+      {
+        "path": "skills/character-refs/SKILL.md",
+        "sha256": "9f20a635e81dcf8372c957b04a17cc4e3accfe322bf6a0cf8f9e18225eb12d55",
+        "bytes": 13071
+      },
+      {
+        "path": "skills/novel-art/SKILL.md",
+        "sha256": "688116bcb868ad68f0bfbe5d029f1d65b2f1ce2918b98734f653cea0216a1377",
+        "bytes": 8297
+      },
+      {
+        "path": "skills/novel-characters/SKILL.md",
+        "sha256": "cda2bc652a24548a68f4ae632f47380b7d275134769a9495feb7891b0ed5ab44",
+        "bytes": 11764
+      },
+      {
+        "path": "skills/novel-outline/SKILL.md",
+        "sha256": "055e2fb2ad76462635cc82fe78a68ab65f613e68cd8b88a9570c9880ff522427",
+        "bytes": 8991
+      },
+      {
+        "path": "skills/novel-script/SKILL.md",
+        "sha256": "689e28a0824dafad65eec3b0948fd9ffa12e369d74a2e07eeeb946ada711da58",
+        "bytes": 9204
+      },
+      {
+        "path": "skills/novel-storyboard/SKILL.md",
+        "sha256": "ea40109af1ebc482116dd23a22d78fb3c3e8c6b44371c8ae82dfe8e464778863",
+        "bytes": 13780
+      }
+    ],
+    "snapshotMode": "licensed-entrypoint-snapshot"
+  },
+  {
+    "repo": "songguoxs/seedance-prompt-skill",
+    "commit": "57d1e2f273747c238dd892698a05137ab2f10d4a",
+    "stars": 2863,
+    "license": null,
+    "files": [
+      {
+        "path": ".claude/skills/seedance/SKILL.md",
+        "sha256": "cd1a712e9422d394204026e89e9aba1d7e0c5c46abc4d0aa0cc08c7157b9cf12",
+        "bytes": 23110
+      },
+      {
+        "path": "README.md",
+        "sha256": "c480ed6c32acd4f10b2fdf9ae07255a9d488177ec2af7a077c2e74c55f059217",
+        "bytes": 12875
+      }
+    ],
+    "snapshotMode": "source-ledger-only"
+  },
+  {
+    "repo": "zenstory-ai/drama-skills",
+    "commit": "c2426e03c0e7722bebcc6a488b6658dc38c65ac3",
+    "stars": 2525,
+    "license": "MIT",
+    "files": [
+      {
+        "path": "LICENSE",
+        "sha256": "840bdb5ba503ca4397f5a6049e6e8da182330f83bb70006d5656d7dd00674e9b",
+        "bytes": 1082
+      },
+      {
+        "path": "README.md",
+        "sha256": "294e6e231ba8813bcece8ecebce8528ba500d1e9ed83fa3909a4350438805bc6",
+        "bytes": 23979
+      },
+      {
+        "path": "maintainers/skills/short-drama-knowhow/SKILL.md",
+        "sha256": "cb17c0bcd2debb3c6cef00a97f61ac0a71e005bad68dba024dd9aa093bc56a23",
+        "bytes": 8000
+      },
+      {
+        "path": "skills/short-drama-assets/SKILL.md",
+        "sha256": "6d054eb344b5b63ca411937ceaee9b7fbc7504037089120eedf3fad0d0f531f2",
+        "bytes": 5506
+      },
+      {
+        "path": "skills/short-drama-develop/SKILL.md",
+        "sha256": "ef05a00f6ba8735547c785655b0e52d9bdca3aa1d7396e51900a0c9fc4ce3953",
+        "bytes": 10757
+      },
+      {
+        "path": "skills/short-drama-edit/SKILL.md",
+        "sha256": "3a8c8e52f6d648cff82aedc783ef7aee65594ecb089cfc8da62c44b1f3227bb0",
+        "bytes": 15232
+      },
+      {
+        "path": "skills/short-drama-image-prompts/SKILL.md",
+        "sha256": "95f0bd1da8a53d887b2d9a98ea085518f1d746390cba275fee0766172f04110b",
+        "bytes": 4510
+      },
+      {
+        "path": "skills/short-drama-novel-analyze/SKILL.md",
+        "sha256": "035aeec4340708924f8be215d987747716ccec55d8cfb62e87dc73cb3479bef0",
+        "bytes": 14927
+      },
+      {
+        "path": "skills/short-drama-produce/SKILL.md",
+        "sha256": "25ba8c4294806abe34c9c62477d8dc8c9e1e86ab210ce54c354959904f9ff760",
+        "bytes": 15124
+      },
+      {
+        "path": "skills/short-drama-review/SKILL.md",
+        "sha256": "0ac06648dea5433c94ebb1c33ebe47f645e5e09c9cbf4a54cc1bdfb503d8f5a5",
+        "bytes": 5320
+      },
+      {
+        "path": "skills/short-drama-storyboard/SKILL.md",
+        "sha256": "a603d2254e91d6dc323f69fd137620fdfdc36b1ff738f3ef292ba9c3f4a8b4f5",
+        "bytes": 19365
+      },
+      {
+        "path": "skills/short-drama-video-prompts/SKILL.md",
+        "sha256": "a542f15744384e86d63cf4e07431fdcbbe741df3c8b3fa3984885b31185dbdf7",
+        "bytes": 16930
+      },
+      {
+        "path": "skills/short-drama-write/SKILL.md",
+        "sha256": "da55f07db5d92ec63192fc7510fc52cc0e7f5142050155c8d5945a02eb82e111",
+        "bytes": 10460
+      },
+      {
+        "path": "skills/short-drama/SKILL.md",
+        "sha256": "a70b0deae817f66adf3c8d05bb1133ace7b8b9792d9d8e3fc7aee47dc8330e77",
+        "bytes": 11493
+      }
+    ],
+    "snapshotMode": "licensed-entrypoint-snapshot"
+  },
+  {
+    "repo": "liangdabiao/Seedance2-Storyboard-Generator",
+    "commit": "aceab4e277aa26cb33794fce6e17e5425ad721dd",
+    "stars": 2518,
+    "license": null,
+    "files": [
+      {
+        "path": ".claude/skills/seedance-storyboard-generator/SKILL.md",
+        "sha256": "7bc6d8264ad0e884642269d2a350501c943139185221b3b430824b3ec8ae0edf",
+        "bytes": 20303
+      },
+      {
+        "path": "README.md",
+        "sha256": "22a37cdf21d2f844bd6faf28131b7b4726addaa6cbd60189dac959a4598c998d",
+        "bytes": 7821
+      }
+    ],
+    "snapshotMode": "source-ledger-only"
+  },
+  {
+    "repo": "LearnPrompt/awesome-seedance",
+    "commit": "37ca03c06a844476f3b714824d47e544fbf11277",
+    "stars": 1708,
+    "license": "MIT",
+    "files": [
+      {
+        "path": "LICENSE",
+        "sha256": "1eef1394cbdc77865323cb153d3ffc241af74184246ee253ce5bcfd65b61cc0b",
+        "bytes": 1068
+      },
+      {
+        "path": "README.md",
+        "sha256": "8648a63ee44b3a7729f095c20507cdf3d90ac978210c36f019c7bbc95a7e628f",
+        "bytes": 110450
+      },
+      {
+        "path": "agents/skills/seedance-3d-cartoon/SKILL.md",
+        "sha256": "3a2b1dc969b8c9b702f000ece94a0e021d2d5260113ba874f418d6dcc82079e7",
+        "bytes": 9165
+      },
+      {
+        "path": "agents/skills/seedance-car-vehicle/SKILL.md",
+        "sha256": "035789dcfaea3b220d3a419ffe635413321240014e0a99f0f78fd1425ff739f6",
+        "bytes": 8372
+      },
+      {
+        "path": "agents/skills/seedance-epic-fantasy-scifi/SKILL.md",
+        "sha256": "10f46c7671ef4724e763b647fdb1a2f7660df38791ab9648a9f6f612a7744b3f",
+        "bytes": 8555
+      },
+      {
+        "path": "agents/skills/seedance-fashion-lookbook/SKILL.md",
+        "sha256": "d767087331fd0b01535476779603d77ec0aeca223197e69c79ab47953054714e",
+        "bytes": 8878
+      },
+      {
+        "path": "agents/skills/seedance-food-asmr/SKILL.md",
+        "sha256": "ad0494a92e459f8a5b35e1ecfd1e658ab52befbf5b6d6bcccf09c2518ff5f3c4",
+        "bytes": 9456
+      },
+      {
+        "path": "agents/skills/seedance-game-ui-livestream/SKILL.md",
+        "sha256": "dbef0d692ba1b0155b3bd3e8373b15266aee50a8a731e81bcb8a469c76fd3389",
+        "bytes": 10399
+      },
+      {
+        "path": "agents/skills/seedance-horror-suspense/SKILL.md",
+        "sha256": "d2da46adb6e2af0db22982cdd33d230726c6cbdb69b0dfca953f654cedf5baaa",
+        "bytes": 8633
+      },
+      {
+        "path": "agents/skills/seedance-meme-comedy/SKILL.md",
+        "sha256": "3f731001b61f76858365b3ae3cfa278cee13e0b16ff079f22c35c05758fceeba",
+        "bytes": 8202
+      },
+      {
+        "path": "agents/skills/seedance-pet-animal/SKILL.md",
+        "sha256": "ac854a2c41435e38b1591dea37815fd2e8c6715302954371a98c99f5d4d18537",
+        "bytes": 9099
+      },
+      {
+        "path": "agents/skills/seedance-production-workflow/SKILL.md",
+        "sha256": "b40482f047a3463cd9a4c7cb4fcbf65997b6ae12d35b67d6187334c458ff0ef4",
+        "bytes": 5941
+      },
+      {
+        "path": "agents/skills/seedance-prompt-library/SKILL.md",
+        "sha256": "8e20f2012ac48aedd0598ea9f5770a39ae5455b9ee8c86272ecfefb25f19695a",
+        "bytes": 4186
+      },
+      {
+        "path": "agents/skills/seedance-retro-dv-home-video/SKILL.md",
+        "sha256": "f993c681db2464e31f0c885e3dc57e3dd353c98de7ce0713deea2e07580608af",
+        "bytes": 8789
+      },
+      {
+        "path": "agents/skills/seedance-sports-extreme/SKILL.md",
+        "sha256": "eee26998069bc2cd553475d03c71129a16c69f05eadb07ca43875a18b7606529",
+        "bytes": 8814
+      },
+      {
+        "path": "agents/skills/seedance-storyboard-grid-to-video/SKILL.md",
+        "sha256": "eb71e8a4fbc924688ec5ccf4ef6224f6d4c051a123f267b8c4889228cfd5addf",
+        "bytes": 9206
+      },
+      {
+        "path": "agents/skills/seedance-travel-city-walk/SKILL.md",
+        "sha256": "ef9ec7e6f3994173f6e109e775b8935db7377c85b2f496c8d4b59b3b6675e89b",
+        "bytes": 8529
+      }
+    ],
+    "snapshotMode": "licensed-entrypoint-snapshot"
+  },
+  {
+    "repo": "0xsline/short-drama",
+    "commit": "8979a428c31a865421d661bdb606e24314b683a0",
+    "stars": 1353,
+    "license": "MIT",
+    "files": [
+      {
+        "path": "LICENSE",
+        "sha256": "a42977a69c8c05840da8a8e2f9d8dff9f5c8346f236eeabf8c97fb0812f5fe50",
+        "bytes": 1064
+      },
+      {
+        "path": "README.md",
+        "sha256": "ba83398ad1a825fa9d6e3c702aaf04838d005a1124f1253a3c009df5bf72f0ee",
+        "bytes": 15318
+      },
+      {
+        "path": "SKILL.md",
+        "sha256": "a55579b7d1e2341667204259cff5b9cda95df68836174beed3217d5d75bb3047",
+        "bytes": 13968
+      }
+    ],
+    "snapshotMode": "licensed-entrypoint-snapshot"
+  },
+  {
+    "repo": "lixiaoxiao9888-create/manju-laoli-skill",
+    "commit": "079df685f7cf2f0de635362bd359c233db38f9fe",
+    "stars": 1035,
+    "license": "MIT",
+    "files": [
+      {
+        "path": "LICENSE",
+        "sha256": "016457fec8798111fb307c02ef9f035c4ca7923fbcb3a0aa5176fb3ec765b6e4",
+        "bytes": 1096
+      },
+      {
+        "path": "README.md",
+        "sha256": "56d88e33d3e0cbe5cc0a96f61518493bb0504c2d3c9e0d7b7689a834c174669a",
+        "bytes": 24042
+      },
+      {
+        "path": "short-drama-director/SKILL.md",
+        "sha256": "c74eaa788e80352c378cbae86b7a3b95fda734d9f2ca39ec2837d80185a2813a",
+        "bytes": 54105
+      }
+    ],
+    "snapshotMode": "licensed-entrypoint-snapshot"
+  },
+  {
+    "repo": "beshuaxian/higgsfield-seedance2-jineng",
+    "commit": "83dcb10ee38c9694ac0f455ec55a62f2be3b8a14",
+    "stars": 880,
+    "license": null,
+    "files": [
+      {
+        "path": "README.md",
+        "sha256": "93f2fcda277223383315b0a2bb31b49ee605f6e274c9950881c4959794ac0063",
+        "bytes": 9360
+      },
+      {
+        "path": "skills/01-cinematic/SKILL.md",
+        "sha256": "87b90383b38d065d12805f6b19e4e5d0064bc2533fe9e1afa586a01db70d7180",
+        "bytes": 90501
+      },
+      {
+        "path": "skills/01-cinematic/zh-CN/SKILL.md",
+        "sha256": "f4a143a31e2aaface7ccc7c0d489ac00bae886c75241088dcdf38ffecd3cb6b2",
+        "bytes": 11778
+      },
+      {
+        "path": "skills/02-3d-cgi/SKILL.md",
+        "sha256": "da40dac3bd34e5b57f07568616bb848d10ed3531a49449d7c5a8295fff1a4745",
+        "bytes": 71712
+      },
+      {
+        "path": "skills/02-3d-cgi/zh-CN/SKILL.md",
+        "sha256": "6a57c686453328ac8dbc56ea5accd84ddeafecd2001fb1c7e74ed02f090cbfb6",
+        "bytes": 12976
+      },
+      {
+        "path": "skills/03-cartoon/SKILL.md",
+        "sha256": "89c2d0f523098d6a58ec98d18775509a998d45cb5f100dec7f67fc9c542a9b3b",
+        "bytes": 80013
+      },
+      {
+        "path": "skills/03-cartoon/zh-CN/SKILL.md",
+        "sha256": "f579ff50b854c396ea1712d9ca7eb51b9743c89cec8c1b86c98265e92b178836",
+        "bytes": 13452
+      },
+      {
+        "path": "skills/04-comic-to-video/SKILL.md",
+        "sha256": "98ad9c2e326fab1bffd5573b35fb13928852501ea06759c1ab656b81fbd8fa10",
+        "bytes": 87053
+      },
+      {
+        "path": "skills/04-comic-to-video/zh-CN/SKILL.md",
+        "sha256": "6b2a391d2d8f66501a8b8b128a0a0d3ca2b4e8bcb2b1ccb71ee53eccf89a2b0b",
+        "bytes": 14151
+      },
+      {
+        "path": "skills/05-fight-scenes/SKILL.md",
+        "sha256": "0eff22112901d4f8946dd9f3e9608dca575b981ac56cc1e0ca407f159743f762",
+        "bytes": 44901
+      },
+      {
+        "path": "skills/05-fight-scenes/zh-CN/SKILL.md",
+        "sha256": "9c09b9fedfebca9e81a1e3a56ce9c5f780fe26c8aeebb23b98b75f3fa6d2bba9",
+        "bytes": 14452
+      },
+      {
+        "path": "skills/06-motion-design-ad/SKILL.md",
+        "sha256": "297124ca7e0a6743cbbc79c8de3de4ef722cc81f0d01c1cbfbf05b0ec574d29f",
+        "bytes": 57407
+      },
+      {
+        "path": "skills/06-motion-design-ad/zh-CN/SKILL.md",
+        "sha256": "b5ebe4cdabfa8efa20f3ce8568e570095107eb5310e9bdc0fdf16735e246563f",
+        "bytes": 16460
+      },
+      {
+        "path": "skills/07-ecommerce-ad/SKILL.md",
+        "sha256": "304419b6d16e697ee5f2bc42e562ff8b4bb82b371f53f30c08b32fb044da8f20",
+        "bytes": 42378
+      },
+      {
+        "path": "skills/07-ecommerce-ad/zh-CN/SKILL.md",
+        "sha256": "fd51d932549194f77f4906e9ca4986b074d3fd4d6ed500a4fe5e8fd8b9d66d68",
+        "bytes": 15194
+      },
+      {
+        "path": "skills/08-anime-action/SKILL.md",
+        "sha256": "abebcb5f641cb21a46a9eb6874b540b7d4c889aca0e14f7fd634280c971313b3",
+        "bytes": 70358
+      },
+      {
+        "path": "skills/08-anime-action/zh-CN/SKILL.md",
+        "sha256": "5ad492b66fc0f35403b4fafe68759410317b75cc000f9fe363ed34a5d45a5f47",
+        "bytes": 17041
+      },
+      {
+        "path": "skills/09-product-360/SKILL.md",
+        "sha256": "c23ccc52f9796fd580d90a687c2df8004d2568d383c482a9cddee1ed947dc283",
+        "bytes": 63652
+      },
+      {
+        "path": "skills/09-product-360/zh-CN/SKILL.md",
+        "sha256": "cb8025434d378a08ba4a629a8763d2b7480ff2da890aca884ae35f4414698923",
+        "bytes": 16865
+      },
+      {
+        "path": "skills/10-music-video/SKILL.md",
+        "sha256": "5e4d377fc467a45301e4653c6df3e14783abe5dc6e54dd13fc9a5ea4808a2425",
+        "bytes": 80081
+      },
+      {
+        "path": "skills/10-music-video/zh-CN/SKILL.md",
+        "sha256": "70e43d01f1c78cee96331df44d5e5062a240c1862e128a0d9f8dba80e6f629f0",
+        "bytes": 21037
+      },
+      {
+        "path": "skills/11-social-hook/SKILL.md",
+        "sha256": "61cc2bcfd7f20847c4694b564856da2b7d0262ab301dbd0985b6412b3cdf7c6a",
+        "bytes": 82032
+      },
+      {
+        "path": "skills/11-social-hook/zh-CN/SKILL.md",
+        "sha256": "cba6f1e1a9f9b987b889c65839e1e900fe317b0aabc7ffbaaf060b941b191200",
+        "bytes": 81835
+      },
+      {
+        "path": "skills/12-brand-story/SKILL.md",
+        "sha256": "b20cbe6c7051f20cefb6bd5b2557ef5b7ffe4e682086e63c7564d1f9dab54264",
+        "bytes": 54805
+      },
+      {
+        "path": "skills/12-brand-story/zh-CN/SKILL.md",
+        "sha256": "050687a17fa1fad1f352340b2f001d94122227b32fd88e3886db67cfe4ce2a9b",
+        "bytes": 54923
+      },
+      {
+        "path": "skills/13-fashion-lookbook/SKILL.md",
+        "sha256": "315663e798f4523d105c390671e84fc1f1b817236355be931705f506dfa5335e",
+        "bytes": 85784
+      },
+      {
+        "path": "skills/13-fashion-lookbook/zh-CN/SKILL.md",
+        "sha256": "8def44a1caed71393f3e8f001997aea24b367ed7dc263e8911ec2b5f1a669af8",
+        "bytes": 86013
+      },
+      {
+        "path": "skills/14-food-beverage/SKILL.md",
+        "sha256": "58cdf20d520a0fefa73bb9492d5cf08662f892d554cde94b87d5621f548208d8",
+        "bytes": 52448
+      },
+      {
+        "path": "skills/14-food-beverage/zh-CN/SKILL.md",
+        "sha256": "1d7e0ce10e2d8e9be356e914a8596988f3e237c399d8d62cb798e8b53b503e67",
+        "bytes": 52563
+      },
+      {
+        "path": "skills/15-real-estate/SKILL.md",
+        "sha256": "465c6077892a51f69409a8c5db825614d12409ec16c585124bd280176b31650c",
+        "bytes": 95421
+      },
+      {
+        "path": "skills/15-real-estate/zh-CN/SKILL.md",
+        "sha256": "e99014f4cd2fe310a2f97063ec56c050dd3fd24dc6dad5443dfe36de807c9066",
+        "bytes": 95363
+      }
+    ],
+    "snapshotMode": "source-ledger-only"
+  }
+]

@@ -2,6 +2,8 @@
 
 ## 工作台操作
 
+- [上美影水墨淡彩推文与完整教程](tutorials/smy-watercolor/README.md)
+
 - [原始创作输入保存](creative-idea-persistence.md)
 - [剧本生成进度](script-generation-progress.md)与[剧本打磨](script-refinement.md)
 - [资产分析进度](asset-generation-progress.md)与[视觉资产](visual-assets.md)
@@ -14,6 +16,7 @@
 
 - [视频导演提示词](video-prompt-direction.md)
 - [审美及导演风格技能](style-skills.md)
+- [GitHub 短剧技能分类与接入](github-drama-skills.md)
 - [默认导演业务技能](director-skills.md)
 - [编剧方法](screenwriting-methods.md)与[情感对白审阅](emotional-directing.md)
 - [连贯性工作流](continuity-workflow.md)

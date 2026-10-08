@@ -1,0 +1,212 @@
+[
+  {
+    "name": "github-seedance-directing",
+    "title": "Seedance · 表演、摄影与声音",
+    "type": "director",
+    "description": "为已确认故事规划有动机的摄影、表演、声音和跨段接续；不绑定单一供应商参数。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "Emily2040/seedance-2.0",
+    "commit": "4668457e560eee06e95d7fcfdf441c8c0bba802e",
+    "bodySha256": "4d99b433419b58271addbc33512c35a2525df76d29eb868fa4a4ce08862b4b7a"
+  },
+  {
+    "name": "github-seedance-prompt-guide",
+    "title": "Seedance · 多模态提示词",
+    "type": "director",
+    "description": "按真实参考素材编写身份、动作、运镜和音频职责明确的视频提示词。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "dexhunter/seedance2-skill",
+    "commit": "516284d5bab58361bfdfed3cc96cee3e837d4c44",
+    "bodySha256": "8cea74e8c5e3e109309d03ea8a97d86892c1831363ffacdbb878acefe601945a"
+  },
+  {
+    "name": "github-novel-adaptation",
+    "title": "说好 · 小说改编与制作资料",
+    "type": "screenwriting",
+    "description": "把原著证据、改编取舍、人物关系、场景道具和分集剧本串成可追踪的制作资料。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "eternityspring/shuohao-skills",
+    "commit": "ef4ac0c313c7eeb1f918db5f0f0eb319745900bc",
+    "bodySha256": "c7faf1229e1b94708bcf7409cb599ef457573549514e4f828c6017435fb271ca"
+  },
+  {
+    "name": "github-seedance-consistency",
+    "title": "Seedance · 一致性与续段提示词",
+    "type": "director",
+    "description": "整理多模态素材职责、跨镜一致性和续段起止关系，适合提示词局部修订。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "songguoxs/seedance-prompt-skill",
+    "commit": "57d1e2f273747c238dd892698a05137ab2f10d4a",
+    "bodySha256": "7d8089743d1477588a4c19f72585c238aaccabe175a6ad32f7bc014d4b4dd4d0"
+  },
+  {
+    "name": "github-drama-workflow",
+    "title": "ZenStory · 分阶段制作流程",
+    "type": "screenwriting",
+    "description": "按创作阶段组织原著、剧本、视觉、分镜、提示词、生成和剪辑，支持中途接管与返修。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "zenstory-ai/drama-skills",
+    "commit": "c2426e03c0e7722bebcc6a488b6658dc38c65ac3",
+    "bodySha256": "45ce88d5a7e73ebe8a55a257ec1f60dccfd486a5e3a385b9a629b18066807741"
+  },
+  {
+    "name": "github-storyboard-generator",
+    "title": "故事转分镜 · 资产与段落交接",
+    "type": "director",
+    "description": "从故事事件落实角色、地点、道具、段落任务和跨镜承接，适合多集分镜规划。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "liangdabiao/Seedance2-Storyboard-Generator",
+    "commit": "aceab4e277aa26cb33794fce6e17e5425ad721dd",
+    "bodySha256": "6ce17fd2aa5d19a6171d0990ae4dd118343bd1b2c67c42b4173f471c965065b8"
+  },
+  {
+    "name": "github-seedance-case-library",
+    "title": "Seedance · 案例与技能导航",
+    "type": "director",
+    "description": "按题材、镜头目的和参考策略检索案例；用于比较方法，不直接代表模型能力或质量保证。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "LearnPrompt/awesome-seedance",
+    "commit": "37ca03c06a844476f3b714824d47e544fbf11277",
+    "bodySha256": "36ee3a92e3effb6c6eaf96ee20c96dab4ce567556a4b38b5fbc3f53ca8f3cffe"
+  },
+  {
+    "name": "github-short-drama-writing",
+    "title": "微短剧 · 选题、人物与分集",
+    "type": "screenwriting",
+    "description": "规划题材、人物目标、单集变化和连载钩子，适合商业微短剧写作与修订。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "0xsline/short-drama",
+    "commit": "8979a428c31a865421d661bdb606e24314b683a0",
+    "bodySha256": "7fecf801ee37b94550b8fd30f7272038c14d34ecd961f52534075dd95118a685"
+  },
+  {
+    "name": "github-manju-directing",
+    "title": "漫剧导演 · 空间、动作与表演",
+    "type": "director",
+    "description": "强化空间站位、持物、视线、受力与微表情，面向文戏和动作戏的具体导演规划。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "lixiaoxiao9888-create/manju-laoli-skill",
+    "commit": "079df685f7cf2f0de635362bd359c233db38f9fe",
+    "bodySha256": "e3f1fcef285cef1a4e7cd60c73a93df926fa23cd6e00779a1799c392695dfdbd"
+  },
+  {
+    "name": "github-higgsfield-style-library",
+    "title": "影视风格 · 题材与视觉方法库",
+    "type": "aesthetic",
+    "description": "整理电影、CG、手绘、漫画、动作及商业场景的风格方法，供按项目选用。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "beshuaxian/higgsfield-seedance2-jineng",
+    "commit": "83dcb10ee38c9694ac0f455ec55a62f2be3b8a14",
+    "bodySha256": "a1b002fc906c69a9724a4077468fa41124b28a56c299ffdab0db3d1c55775b24"
+  },
+  {
+    "name": "github-film-aesthetics",
+    "title": "电影写实 · 光色与空间",
+    "type": "aesthetic",
+    "description": "电影写实 · 光色与空间；按已批准人物、场景与基调维护具体视觉决定。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "beshuaxian/higgsfield-seedance2-jineng",
+    "commit": "83dcb10ee38c9694ac0f455ec55a62f2be3b8a14",
+    "bodySha256": "0df5b9f345bea9d4e72a8b4d62d50f2eb0c09d61ef9d1083732844801e8fd9e3"
+  },
+  {
+    "name": "github-cg-aesthetics",
+    "title": "三维 CG · 造型与材料",
+    "type": "aesthetic",
+    "description": "三维 CG · 造型与材料；按已批准人物、场景与基调维护具体视觉决定。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "beshuaxian/higgsfield-seedance2-jineng",
+    "commit": "83dcb10ee38c9694ac0f455ec55a62f2be3b8a14",
+    "bodySha256": "77d12dd9381d9dc24b426b1401a059d968638426bfd2d9fc624b00f8543e3593"
+  },
+  {
+    "name": "github-handdrawn-aesthetics",
+    "title": "二维手绘 · 线条与色板",
+    "type": "aesthetic",
+    "description": "二维手绘 · 线条与色板；按已批准人物、场景与基调维护具体视觉决定。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "beshuaxian/higgsfield-seedance2-jineng",
+    "commit": "83dcb10ee38c9694ac0f455ec55a62f2be3b8a14",
+    "bodySha256": "8f10b8fa58cb281a48c721a335ac1734c8b3ce9cf4cfe002678a8e2bb435eaed"
+  },
+  {
+    "name": "github-comic-motion-aesthetics",
+    "title": "漫画运动 · 画面层级与连续性",
+    "type": "aesthetic",
+    "description": "漫画运动 · 画面层级与连续性；按已批准人物、场景与基调维护具体视觉决定。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "beshuaxian/higgsfield-seedance2-jineng",
+    "commit": "83dcb10ee38c9694ac0f455ec55a62f2be3b8a14",
+    "bodySha256": "06043cff0be1a3b51882dfaf1738915e02754ed9f68546f17f0f2b237e8ed621"
+  },
+  {
+    "name": "github-anime-aesthetics",
+    "title": "动漫动作 · 轮廓与动势",
+    "type": "aesthetic",
+    "description": "动漫动作 · 轮廓与动势；按已批准人物、场景与基调维护具体视觉决定。",
+    "enabled": true,
+    "artStyle": "",
+    "files": [
+      "references/source.md"
+    ],
+    "repo": "beshuaxian/higgsfield-seedance2-jineng",
+    "commit": "83dcb10ee38c9694ac0f455ec55a62f2be3b8a14",
+    "bodySha256": "d6537f4818608f8c98590f8a35befa4ff9a09ca5530dce7cebffa57fdcd10395"
+  }
+]

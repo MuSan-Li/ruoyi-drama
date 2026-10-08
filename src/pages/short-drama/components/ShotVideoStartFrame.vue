@@ -17,7 +17,12 @@ function update(value: boolean | string | number) {
 </script>
 
 <template>
-  <el-form-item label="首帧（可选）">
-    <el-checkbox :model-value="enabled" :disabled="disabled" @update:model-value="update">使用已有首帧</el-checkbox>
-  </el-form-item>
+  <div class="start-frame-setting">
+    <el-switch :model-value="enabled" :disabled="disabled" size="small" aria-label="使用已有首帧" @update:model-value="update" />
+    <span>使用已有首帧</span><small>可选参考</small>
+  </div>
 </template>
+
+<style scoped>
+.start-frame-setting { display: flex; align-items: center; gap: 9px; padding-top: 12px; min-height: 28px; }.start-frame-setting span { font-size: 12px; color: var(--drama-text-secondary, #657084); }.start-frame-setting small { margin-left: auto; font-size: 11px; color: var(--drama-text-tertiary, #8a94a6); }
+</style>

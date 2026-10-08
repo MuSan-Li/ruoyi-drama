@@ -16,8 +16,8 @@ const issue = computed(() => videoSecondsIssue(settings.value));
 </script>
 
 <template>
-  <el-form-item label="视频秒数（可选）" :error="issue">
+  <el-form-item label="时长 · 可选" :error="issue">
     <el-input :model-value="input" type="number" inputmode="numeric" clearable :disabled="disabled"
-      aria-label="视频秒数（可选）" placeholder="留空：不指定秒数" @update:model-value="emit('update', withVideoSeconds(settings, $event))" />
+      aria-label="视频秒数（可选）" placeholder="模型默认" @update:model-value="emit('update', withVideoSeconds(settings, $event))"><template #suffix>秒</template></el-input>
   </el-form-item>
 </template>

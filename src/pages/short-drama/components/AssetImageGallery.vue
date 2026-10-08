@@ -93,7 +93,7 @@ function openPrompt(index: number) {
     append-to-body
     destroy-on-close
     class="asset-image-preview-dialog"
-    @update:model-value="value => { if (!value) closePreview(); }"
+    @update:model-value="(value: boolean) => { if (!value) closePreview(); }"
   >
     <button type="button" class="asset-image-preview" title="点击大图关闭" @click="closePreview">
       <GeneratedAssetImage v-if="previewUrl" :src="previewUrl" :title="previewAlt" :interactive="false" />
@@ -107,7 +107,7 @@ function openPrompt(index: number) {
     append-to-body
     destroy-on-close
     class="asset-prompt-dialog"
-    @update:model-value="value => { if (!value) promptIndex = null; }"
+    @update:model-value="(value: boolean) => { if (!value) promptIndex = null; }"
   >
     <pre class="prompt-summary">{{ promptDisplay.summary }}</pre>
     <details v-if="promptDisplay.condensed" class="prompt-full-record">

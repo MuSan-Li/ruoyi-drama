@@ -28,7 +28,7 @@ async function save(reset = false) {
 
 <template>
   <details class="shot-voices" @toggle="load">
-    <summary>本镜发言人与声音 <span v-if="preview">{{ preview.bindings.map(b => b.characterName).join('、') || '未带入角色样音' }}</span></summary>
+    <summary><strong>角色声音</strong><span>{{ preview ? (preview.bindings.map(b => b.characterName).join('、') || '未带入样音') : '发言人 / 样音' }}</span></summary>
     <div class="shot-voice-form">
       <el-select v-model="ids" multiple placeholder="本镜无角色对白" :disabled="busy || disabled" aria-label="本镜实际发言人"><el-option v-for="c in characters" :key="c.id" :value="String(c.id)" :label="c.name" /></el-select>
       <div class="shot-voice-actions"><el-button size="small" :disabled="busy || disabled || !preview" @click="save(false)">保存发言人</el-button><el-button size="small" text :disabled="busy || disabled" @click="save(true)">恢复自动识别</el-button><el-button size="small" text :disabled="busy" @click="load()">刷新绑定</el-button></div>
@@ -41,4 +41,7 @@ async function save(reset = false) {
 
 <style scoped>
 .shot-voices{padding:8px 10px;border:1px solid #d9e3ee;border-radius:7px;margin:8px 0;background:#f8fafc;font-size:12px}.shot-voices summary{cursor:pointer;font-weight:600;display:flex;justify-content:space-between;gap:12px}.shot-voices summary span{font-weight:400;color:#61748a}.shot-voice-form{display:grid;gap:8px;padding-top:10px}.shot-voice-form p{margin:0;color:#64748b;line-height:1.6}.shot-voice-actions{display:flex;gap:8px;flex-wrap:wrap}.shot-voice-binding{color:#26784c}.shot-voice-form .shot-voice-error{color:#b15525}
+</style>
+<style scoped>
+.shot-voices { min-width: 0; margin: 0; padding: 11px 13px; border-color: var(--drama-border, #e0e5ed); border-radius: 8px; background: var(--drama-surface-muted, #f7f8fa); }.shot-voices summary { list-style: none; align-items: center; justify-content: flex-start; gap: 9px; min-height: 20px; color: var(--drama-text, #253249); font-size: 12px; font-weight: 400; }.shot-voices summary::-webkit-details-marker { display: none; }.shot-voices summary::before { content: ''; width: 5px; height: 5px; margin-right: 3px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform .15s; flex-shrink: 0; }.shot-voices[open] > summary::before { transform: rotate(45deg); }.shot-voices summary strong { font-weight: 400; }.shot-voices summary span { margin-left: auto; font-size: 11px; color: var(--drama-text-secondary, #657084); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.shot-voice-actions :deep(.el-button) { margin: 0; }
 </style>

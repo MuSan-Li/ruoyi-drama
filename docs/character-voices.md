@@ -14,6 +14,10 @@
 
 本接入使用固定样音作为角色声音身份。Seed Audio返回任务编号及音频结果，当前公开响应没有返回可复用的 `voiceId`，系统不会为供应商虚构音色ID。参考音频用于指导视频音色，不能代替成片对白、口型和音色的实际验收。[Atlas接口文档](https://www.atlascloud.ai/docs/more-models/bytedance/seed-audio-1.0/generateAudio)
 
+Seedance 2.5有角色声音参考时必须使用 `bytedance/seedance-2.5/reference-to-video`；`text-to-video` 的公开请求字段不包含 `reference_audios`。供应商通过 `@Audio1`、`@Audio2` 按 `reference_audios` 的提交顺序识别音频，后端提交时将内部的 `@音频N`、`@audioN` 转为该语法，同时转换图片和视频引用；不改写已保存分镜及历史回执。仅音频参考也设置 `omni_reference_task_type: reference`，不要求额外首帧。[Seedance 2.5参考接口](https://www.atlascloud.ai/docs/zh/more-models/bytedance/seedance-2.5-reference-to-video/generateVideo)
+
+`generate_audio: true` 表示让视频模型生成同步声音，不能作为固定演员音色的开关。当前公开视频接口没有 `voice_id` 或跨任务共享音色会话参数。固定样音仍是生成参考；若需要成片每镜采用同一配音，应先制作和试听对白录音，按镜切分后供画面与口型参考，合成时保留已确认的录音，并检查口型及环境声衔接。该流程需要另行制作，不能把样音绑定完成写成整段配音已经完成。
+
 ## 后端接口与保存
 
 所有接口校验项目所属用户与角色/分镜所属项目。

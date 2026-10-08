@@ -153,7 +153,7 @@ export default {
     refresh: '刷新目录', search: '搜索短剧技能与提示词', empty: '没有匹配的内容',
     loadFailed: '短剧技能加载失败', copy: '复制正文', copied: '正文已复制', copyFailed: '复制失败，请手动选择正文',
     version: '内容版本', enabled: '已启用', disabled: '已停用',
-    categories: { system: '系统提示词', production: '默认制作技能', aesthetic: '审美风格', director: '导演风格' },
+    categories: { system: '系统提示词', production: '默认制作技能', screenwriting: '编剧风格', aesthetic: '视觉风格', director: '导演风格' },
   },
   layout: {
     skillMarket: '技能市场',

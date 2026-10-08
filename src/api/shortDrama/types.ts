@@ -16,6 +16,7 @@ export interface ShortDramaProject {
   artStyle?: string;
   aestheticSkillName?: string;
   directorSkillName?: string;
+  storyboardSkillNames?: string[];
   composeAspectRatio?: ShortDramaAspectRatio;
   createTime?: string;
   updateTime?: string;
@@ -29,6 +30,8 @@ export interface ShortDramaScript {
   outlineText?: string;
   tone?: string;
   sourceType?: string;
+  worldbuilding?: string;
+  revisionNotes?: string;
   createTime?: string;
   updateTime?: string;
 }
@@ -162,13 +165,14 @@ export interface ShortDramaAudio {
 export interface ShortDramaIdea {
   aestheticSkillName?: string;
   directorSkillName?: string;
+  storyboardSkillNames?: string[];
   idea: string;
   model: string;
   projectName?: string;
   artStyle?: string;
 }
 
-export type ShortDramaSkillType = 'aesthetic' | 'director';
+export type ShortDramaSkillType = 'aesthetic' | 'director' | 'screenwriting';
 
 export interface ShortDramaSkill {
   name: string;

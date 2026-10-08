@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { planningPending } from '@/utils/storyboardPlanningProgress';
 import type { PlanningJob } from '@/utils/storyboardPlanningProgress';
 import { storyboardEstimate, storyboardFailureSummary } from '@/utils/storyboardGenerationFeedback';
+import VideoPromptReader from './VideoPromptReader.vue';
 const props = defineProps<{ job: PlanningJob; now: number; querying: boolean; canRetry?: boolean }>();
 defineEmits<{ query: []; retry: [] }>();
 const dismissed = ref<string>();
@@ -52,7 +53,7 @@ function activity(call: (typeof calls.value)[number]) {
         <p>{{ value(card.panel, 'description', 'sceneText') }}</p>
         <dl v-if="design(card.panel).framing"><dt>构图与拍法</dt><dd>{{ design(card.panel).framing }} · {{ design(card.panel).movement }}</dd></dl>
         <dl v-if="design(card.panel).cut_in"><dt>接镜</dt><dd>{{ design(card.panel).cut_in }}</dd><dt>交镜</dt><dd>{{ design(card.panel).cut_out }}</dd></dl>
-        <dl v-if="value(card.panel, 'video_prompt', 'videoPrompt')"><dt>视频提示词</dt><dd>{{ value(card.panel, 'video_prompt', 'videoPrompt') }}</dd></dl>
+        <dl v-if="value(card.panel, 'video_prompt', 'videoPrompt')"><dt>视频提示词</dt><dd><VideoPromptReader :text="value(card.panel, 'video_prompt', 'videoPrompt')" compact /></dd></dl>
       </article>
       <article v-for="n in placeholders" :key="`waiting:${n}`" class="generation-shot placeholder" aria-label="镜头生成占位">
         <div class="skeleton short" /><div class="skeleton canvas" /><div class="skeleton" /><div class="skeleton" /><div class="skeleton medium" />

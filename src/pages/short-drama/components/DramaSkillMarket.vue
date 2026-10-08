@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { listDramaSkillMarket } from '@/api/shortDrama/skills';
-import type { DramaMarketEntry } from '@/api/shortDrama/skills';
+import { listDramaSkillCategories, listDramaSkillMarket } from '@/api/shortDrama/skills';
+import type { DramaMarketEntry, DramaSkillCategory } from '@/api/shortDrama/skills';
 import DramaSkillMarketDetail from './DramaSkillMarketDetail.vue';
 
 const visible = defineModel<boolean>({ default: false });
-const { t } = useI18n();
+const { t, te } = useI18n();
 const entries = ref<DramaMarketEntry[]>([]);
 const loading = ref(false);
 const error = ref('');
 const category = ref('system');
 const search = ref('');
 const selectedKey = ref('');
-const categories = ['system', 'production', 'aesthetic', 'director'];
+const categories = ref<DramaSkillCategory[]>([]);
+const categoryTabs = computed(() => categories.value.map(item => ({
+  ...item,
+  label: te(`skillMarket.categories.${item.type}`) ? t(`skillMarket.categories.${item.type}`) : item.title,
+  count: entries.value.filter(entry => entry.type === item.type).length,
+})));
 const key = (entry: DramaMarketEntry) => `${entry.type}:${entry.name}`;
 const filtered = computed(() => entries.value.filter(entry => entry.type === category.value
   && `${entry.title} ${entry.name} ${entry.description}`.toLowerCase().includes(search.value.trim().toLowerCase())));
@@ -21,7 +26,11 @@ const selected = computed(() => filtered.value.find(entry => key(entry) === sele
 async function refresh() {
   if (loading.value) return;
   loading.value = true; error.value = '';
-  try { entries.value = await listDramaSkillMarket(); }
+  try {
+    const [market, types] = await Promise.all([listDramaSkillMarket(), listDramaSkillCategories()]);
+    entries.value = market; categories.value = types;
+    if (!types.some(item => item.type === category.value)) category.value = types[0]?.type || '';
+  }
   catch (failure) { error.value = failure instanceof Error ? failure.message : t('skillMarket.loadFailed'); }
   finally { loading.value = false; }
 }
@@ -30,7 +39,7 @@ watch(visible, open => { if (open) void refresh(); });
 <template>
   <el-dialog v-model="visible" :title="t('layout.skillMarket')" width="min(1120px, 96vw)" append-to-body class="drama-market-dialog">
     <div class="market-toolbar"><el-button :loading="loading" @click="refresh">{{ t('skillMarket.refresh') }}</el-button></div>
-    <el-tabs v-model="category"><el-tab-pane v-for="type in categories" :key="type" :label="`${t(`skillMarket.categories.${type}`)} (${entries.filter(entry => entry.type === type).length})`" :name="type" /></el-tabs>
+    <el-tabs v-model="category"><el-tab-pane v-for="item in categoryTabs" :key="item.type" :label="`${item.label} (${item.count})`" :name="item.type" /></el-tabs>
     <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
     <div v-loading="loading" class="market-body">
       <aside>

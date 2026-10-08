@@ -1,98 +1,73 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue';
-import { getShortDramaSkill } from '@/api/shortDrama/skills';
-import type { ShortDramaSkill, ShortDramaSkillDetail, ShortDramaSkillType } from '@/api/shortDrama/types';
-import { validateDramaSkillBindings } from '@/utils/dramaSkillBindings';
+import { computed, shallowRef, watch } from 'vue';
+import { EditPen, VideoCamera, ArrowRight } from '@element-plus/icons-vue';
+import type { ShortDramaSkill, ShortDramaSkillType } from '@/api/shortDrama/types';
+import { dramaSkillRoleNames, selectDramaSkillCategory, validateDramaSkillBindings } from '@/utils/dramaSkillBindings';
 import type { DramaSkillBindingState } from '@/utils/dramaSkillBindings';
 import { useDramaSkillCatalog } from '@/composables/useDramaSkillCatalog';
+import DramaSkillPreview from './DramaSkillPreview.vue';
 
-const props = defineProps<{ legacyLabel?: string; requireAesthetic?: boolean; disabled?: boolean; directorOnly?: boolean }>();
+const props = defineProps<{ disabled?: boolean; stage?: 'script' | 'storyboard' }>();
 const aesthetic = defineModel<string>('aesthetic', { default: '' });
 const director = defineModel<string>('director', { default: '' });
+const storyboardSkills = defineModel<string[]>('storyboardSkills', { default: () => [] });
 const emit = defineEmits<{ validity: [state: DramaSkillBindingState]; catalog: [skills: ShortDramaSkill[]] }>();
-const { catalog, loaded, loading, error, refresh } = useDramaSkillCatalog({ types: props.directorOnly ? ['director'] : undefined });
-const defaultDirector = '__project_default__';
-const directorSelection = computed({ get: () => director.value || defaultDirector, set: value => { director.value = value === defaultDirector ? '' : value; } });
-const previewOpen = shallowRef(false), previewLoading = shallowRef(false), previewError = shallowRef('');
-const preview = ref<ShortDramaSkillDetail>();
-let previewEpoch = 0;
-const aestheticSkills = computed(() => catalog.value.filter(skill => skill.type === 'aesthetic'));
-const directorSkills = computed(() => catalog.value.filter(skill => skill.type === 'director'));
-const validity = computed(() => validateDramaSkillBindings({ aestheticSkillName: props.directorOnly ? '' : aesthetic.value, directorSkillName: director.value }, catalog.value, loaded.value, props.requireAesthetic));
-const selectedCustomSkill = computed(() => !!director.value || (!props.directorOnly && !!aesthetic.value));
+const { catalog, loaded, loading, error, refresh } = useDramaSkillCatalog();
+const previewName = shallowRef('');
+const bindings = computed(() => ({ aestheticSkillName: aesthetic.value, directorSkillName: director.value, storyboardSkillNames: storyboardSkills.value }));
+const roles = computed(() => [
+  { type: 'screenwriting' as const, title: '编剧风格', hint: '剧情结构、人物塑造与对白', icon: EditPen, defaultLabel: '默认编剧风格' },
+  { type: 'director' as const, title: '导演风格', hint: '景别、运镜、表演与接镜', icon: VideoCamera, defaultLabel: '默认导演风格' },
+].map(role => ({ ...role,
+  choices: catalog.value.filter(skill => skill.type === role.type),
+  selected: dramaSkillRoleNames(bindings.value, role.type, catalog.value),
+})));
+const unknown = computed(() => loaded.value ? storyboardSkills.value.filter(name => !catalog.value.some(skill => skill.name === name)) : []);
+const validity = computed(() => validateDramaSkillBindings({ ...bindings.value, aestheticSkillName: '' }, catalog.value, loaded.value));
 watch(validity, state => emit('validity', state), { immediate: true });
 watch(catalog, skills => emit('catalog', skills), { immediate: true });
 
-function missing(name: string, type: ShortDramaSkillType) {
-  return loaded.value && !!name && !catalog.value.some(skill => skill.name === name && skill.type === type);
+function select(type: ShortDramaSkillType, name: string) {
+  const next = selectDramaSkillCategory(bindings.value, type, name, catalog.value);
+  director.value = next.directorSkillName;
+  storyboardSkills.value = next.storyboardSkillNames || [];
 }
-
-async function showSkill(name: string) {
-  const epoch = ++previewEpoch;
-  preview.value = undefined; previewError.value = ''; previewLoading.value = true; previewOpen.value = true;
-  try { const detail = await getShortDramaSkill(name); if (epoch === previewEpoch) preview.value = detail; }
-  catch (failure) { if (epoch === previewEpoch) previewError.value = failure instanceof Error ? failure.message : '技能详情加载失败'; }
-  finally { if (epoch === previewEpoch) previewLoading.value = false; }
-}
-
 </script>
 
 <template>
-  <section class="production-skills" :class="{ compact: directorOnly }" :aria-label="directorOnly ? '分镜方式设置' : '制作技能'">
-    <div v-if="!directorOnly" class="skills-header"><strong>制作技能</strong></div>
-    <div class="skills-grid" :class="{ 'director-only': directorOnly }">
-      <div v-if="!directorOnly" class="skill-field">
-        <label>视觉风格 · 审美技能</label>
-        <div class="skill-select">
-          <el-select v-model="aesthetic" filterable :loading="loading" :disabled="disabled" placeholder="选择审美技能" aria-label="审美技能">
-            <el-option v-if="legacyLabel && !requireAesthetic" value="" :label="`沿用原风格：${legacyLabel}`" />
-            <el-option v-else-if="!requireAesthetic" value="" label="未绑定审美技能" />
-            <el-option v-if="missing(aesthetic, 'aesthetic')" :value="aesthetic" :label="`${aesthetic}（缺失，需重选）`" disabled />
-            <el-option v-for="skill in aestheticSkills" :key="skill.name" :value="skill.name" :label="`${skill.title}${skill.enabled ? '' : '（已停用）'}`" :disabled="!skill.enabled" />
+  <section class="creative-styles" aria-label="创作风格">
+    <div class="style-choices">
+      <div v-for="role in roles" :key="role.type" class="style-choice">
+        <div class="choice-heading"><el-icon><component :is="role.icon" /></el-icon><label>{{ role.title }}</label><span>单选</span></div>
+        <p>{{ role.hint }}</p>
+        <div class="choice-control">
+          <el-select :model-value="role.selected.length > 1 ? '__conflict__' : (role.selected[0] || '')" filterable :loading="loading" :disabled="disabled || !loaded" :aria-label="role.title" :placeholder="role.defaultLabel" @update:model-value="select(role.type, $event)">
+            <el-option value="" :label="role.defaultLabel" />
+            <el-option v-if="role.selected.length > 1" value="__conflict__" :label="`原有 ${role.selected.length} 项，请选定一个`" disabled />
+            <el-option v-if="role.selected.length === 1 && !role.choices.some(skill => skill.name === role.selected[0])" :value="role.selected[0]!" :label="`${role.selected[0]}（需重选）`" disabled />
+            <el-option v-for="skill in role.choices" :key="skill.name" :value="skill.name" :label="`${skill.title}${skill.enabled ? '' : '（已停用）'}`" :disabled="!skill.enabled" />
           </el-select>
-          <el-button size="small" :disabled="!aesthetic" @click="showSkill(aesthetic)">查看说明</el-button>
+          <el-button v-if="role.selected.length === 1" text :disabled="!loaded" :aria-label="`查看${role.title}说明`" @click="previewName = role.selected[0]!">说明<el-icon><ArrowRight /></el-icon></el-button>
         </div>
-      </div>
-      <div class="skill-field">
-        <label>分镜方式</label>
-        <div class="skill-select">
-          <el-select v-model="directorSelection" filterable :loading="loading" :disabled="disabled" placeholder="默认分镜方式" aria-label="分镜方式">
-            <el-option :value="defaultDirector" label="默认分镜方式" />
-            <el-option v-if="missing(director, 'director')" :value="director" :label="`${director}（缺失，需重选）`" disabled />
-            <el-option v-for="skill in directorSkills" :key="skill.name" :value="skill.name" :label="`${skill.title}${skill.enabled ? '' : '（已停用）'}`" :disabled="!skill.enabled" />
-          </el-select>
-          <el-button v-if="director" size="small" @click="showSkill(director)">查看说明</el-button>
-        </div>
+        <p v-if="role.selected.length > 1" class="style-conflict">原选择：{{ role.selected.map(name => catalog.find(skill => skill.name === name)?.title || name).join('、') }}</p>
       </div>
     </div>
-    <div v-if="error && selectedCustomSkill" class="skill-error" role="alert">分镜方式列表暂未读取，请重试。<el-button text size="small" :loading="loading" @click="refresh">重新读取</el-button></div>
-    <p v-else-if="loaded && !validity.ready" class="skill-error" role="status">{{ validity.reason }}</p>
-    <div class="skills-actions"><slot name="actions" /></div>
-    <el-dialog v-model="previewOpen" :title="preview?.title || '技能说明'" width="min(900px, 94vw)" append-to-body>
-      <p v-if="previewLoading">正在读取技能包…</p>
-      <p v-if="previewError" class="skill-error" role="alert">{{ previewError }}</p>
-      <template v-if="preview">
-        <p class="skill-summary">{{ preview.description }}</p>
-        <p class="skill-meta">{{ preview.type === 'aesthetic' ? '审美' : '导演' }} · {{ preview.enabled ? '已启用' : '已停用' }}</p>
-        <details open><summary>SKILL.md · Markdown 正文</summary><pre class="skill-body">{{ preview.body }}</pre></details>
-        <details v-for="file in preview.files" :key="file.path"><summary>{{ file.path }}</summary><pre class="skill-body">{{ file.content }}</pre></details>
-      </template>
-    </el-dialog>
+    <div v-if="unknown.length" class="unavailable-styles"><span>以下风格已缺失：</span><el-tag v-for="name in unknown" :key="name" :closable="!disabled" @close="storyboardSkills = storyboardSkills.filter(item => item !== name)">{{ name }}</el-tag></div>
+    <div v-if="error" class="style-error" role="alert">风格列表读取失败。<el-button text size="small" :loading="loading" @click="refresh">重新读取</el-button></div>
+    <div v-if="$slots.actions" class="style-actions"><slot name="actions" /></div>
+    <DramaSkillPreview v-model="previewName" />
   </section>
 </template>
 
 <style scoped>
-.production-skills { margin: 16px 0; padding: 16px 20px; border: 1px solid #dbe3ef; border-radius: 12px; background: #f8fafc; color: #334155; }
-.production-skills.compact { background:var(--drama-surface-strong); border-color:var(--drama-border); padding:14px 16px; }
-.skills-header, .skill-select, .skills-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-.skills-header { justify-content: space-between; margin-bottom: 12px; }
-.skills-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.skills-grid.director-only { grid-template-columns: 1fr; }
-.skill-field { min-width: 0; }.skill-field label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
-.skill-select .el-select { flex: 1; min-width: 180px; }.skill-field p, .skill-summary { margin: 8px 0 0; font-size: 13px; line-height: 1.7; }
-.skills-actions:empty { display: none; }.skills-actions { margin-top: 12px; }
-.skill-error { margin: 8px 0; color: #b45309; font-size: 13px; line-height: 1.6; }.skill-meta { margin: 12px 0; color: #64748b; font-size: 12px; overflow-wrap: anywhere; }
-details { margin-top: 14px; }summary { cursor: pointer; font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
-.skill-body { margin: 10px 0; padding: 16px; max-height: 55vh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: #f1f5f9; border-radius: 8px; line-height: 1.65; font-size: 13px; }
-@media (max-width: 760px) { .skills-grid { grid-template-columns: 1fr; }.production-skills { padding: 14px; } }
+.creative-styles { container: creative-styles / inline-size; margin: 0 0 22px; padding: 20px 22px; border: 1px solid var(--drama-border, #e0e5ed); border-radius: 12px; background: var(--drama-surface, #fff); }
+.style-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+.style-choice { min-width: 0; }.style-choice + .style-choice { border-left: 1px solid var(--drama-border-subtle, #edf0f4); padding-left: 32px; }
+.choice-heading { display: flex; align-items: center; gap: 8px; color: var(--drama-text, #253249); }.choice-heading .el-icon { color: var(--drama-accent, #4568db); font-size: 17px; }.choice-heading label { font-size: 14px; font-weight: 650; }.choice-heading span { margin-left: auto; font-size: 11px; color: var(--drama-text-tertiary, #8a94a6); }
+.style-choice p { margin: 7px 0 12px; color: var(--drama-text-secondary, #657084); font-size: 12px; line-height: 1.65; }
+.choice-control { display: flex; align-items: center; gap: 8px; }.choice-control .el-select { flex: 1; min-width: 0; }.choice-control .el-button { flex: none; padding: 8px 0 8px 5px; color: var(--drama-text-secondary, #657084); }.choice-control .el-button .el-icon { margin-left: 3px; }
+.creative-styles :deep(.el-select__wrapper) { min-height: 38px; border-radius: 7px; font-size: 13px; }
+.style-choice .style-conflict, .style-error { color: #a16a26; font-size: 12px; }.style-conflict { overflow-wrap: anywhere; }.unavailable-styles { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 14px; font-size: 12px; }.style-actions { display: flex; justify-content: flex-end; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--drama-border-subtle, #edf0f4); }.style-actions :deep(.el-button) { height: 32px; margin: 0; font-size: 12px; }
+@media (max-width: 700px) { .creative-styles { padding: 16px; }.style-choices { grid-template-columns: 1fr; gap: 18px; }.style-choice + .style-choice { border-left: 0; border-top: 1px solid var(--drama-border-subtle, #edf0f4); padding: 18px 0 0; } }
+@container creative-styles (max-width: 600px) { .style-choices { grid-template-columns: 1fr; gap: 18px; }.style-choice + .style-choice { border-left: 0; border-top: 1px solid var(--drama-border-subtle, #edf0f4); padding: 18px 0 0; } }
 </style>
