@@ -24,6 +24,8 @@ import { needsAssetImage } from '@/utils/missingAssetImages';
 import { useStoryboardVideoSubmission } from '@/composables/useStoryboardVideoSubmission';
 import { isLocalVideoTask, isUnresolvedVideoTask, videoSubmissionRecoveryAllowed } from '@/utils/storyboardVideoSubmission';
 import { ShortDramaResponseError } from '@/utils/shortDramaResponse';
+import { useWorkflowFeedback } from '@/composables/useWorkflowFeedback';
+import type { WorkflowRequest } from '@/utils/workflowFeedback';
 import { requireAnalyzedAssets } from '@/utils/shortDramaAssetAnalysis';
 import ContinuityReview from './components/ContinuityReview.vue';
 import ShotVideoReferences from './components/ShotVideoReferences.vue';
@@ -203,7 +205,8 @@ const scriptCreation = useScriptCreation();
 const { job: scriptCreationJob, busy: generating } = scriptCreation;
 let viewMounted = true;
 const savingScript = ref(false);
-const workflowFailureMessage = ref('');
+const workflowFeedback = useWorkflowFeedback(currentProjectId);
+const { message: workflowFailureMessage, records: workflowFailures, dismiss: dismissWorkflowFeedback } = workflowFeedback;
 const polishingScript = ref(false);
 const scriptEditing = ref(false);
 const generatingVideo = ref<Record<SnowflakeId, boolean>>({});
@@ -256,6 +259,7 @@ const scriptForm = ref<ShortDramaScript>({
 const { versions: storyboardVersions, selectedVersionId, selectedShotId, workspaceStoryboards,
   visibleStoryboards, adjacentShots, selectedShotIndex, selectShot } = useStoryboardWorkspace(storyboardDrafts, () => scriptForm.value.id);
 async function refreshPlannedStoryboards(projectId: string) {
+  workflowFeedback.resolve('分镜生成', projectId);
   const result = await getShortDramaDetail(projectId);
   if (currentProjectId.value !== projectId || !result || result.script?.id !== scriptForm.value.id) return;
   detail.value = result;
@@ -266,6 +270,7 @@ async function refreshPlannedStoryboards(projectId: string) {
 const storyboardPlanning = useStoryboardPlanning(currentProjectId, () => scriptForm.value.id, refreshPlannedStoryboards);
 const { current: storyboardJob, busy: regeneratingStoryboard, now: storyboardNow, querying: storyboardQuerying } = storyboardPlanning;
 async function refreshAnalyzedAssets(projectId: string) {
+  workflowFeedback.resolve('资产分析', projectId);
   const result = await getShortDramaDetail(projectId);
   const assets = requireAnalyzedAssets(result);
   if (!viewMounted || currentProjectId.value !== projectId || result.script?.id !== scriptForm.value.id) return;
@@ -326,19 +331,6 @@ async function changeAssetVisualStyle(name: string) {
 }
 
 const CREATIVE_DRAFT_KEY = 'ruoyi-drama:creative-draft-recovery';
-const WORKFLOW_FAILURE_KEY = 'ruoyi-drama:workflow-failures';
-const WORKFLOW_FAILURE_DISMISSED_KEY = 'ruoyi-drama:workflow-failure-dismissed';
-interface WorkflowFailure {
-  recordedAt: string;
-  operation: string;
-  endpoint: string;
-  message: string;
-  httpStatus?: number;
-  contentType?: string;
-  businessCode?: number | string;
-  summary: Record<string, string | number | boolean | null>;
-}
-const workflowFailures = ref<WorkflowFailure[]>([]);
 
 function preserveCreativeDraft() {
   if (route.name === 'login') return; // Standard JSON requests may already have redirected.
@@ -385,26 +377,15 @@ function workflowRequestSummary() {
   };
 }
 
-function recordWorkflowFailure(operation: string, endpoint: string, error: unknown) {
-  const message = error instanceof Error ? error.message : '请求中断，生成结果尚未确认';
-  const feedback: WorkflowFailure = {
-    recordedAt: new Date().toISOString(), operation, endpoint, message,
-    summary: workflowRequestSummary(),
-    ...(error instanceof ShortDramaResponseError ? { httpStatus: error.httpStatus, contentType: error.contentType, businessCode: error.businessCode } : {}),
-  };
-  workflowFailureMessage.value = `${operation}未完成：${message}`;
-  workflowFailures.value = [...workflowFailures.value, feedback].slice(-10);
-  try { sessionStorage.setItem(WORKFLOW_FAILURE_KEY, JSON.stringify(workflowFailures.value)); } catch { /* The visible feedback remains available. */ }
-}
-
-async function handleWorkflowFailure(operation: string, endpoint: string, error: unknown) {
-  recordWorkflowFailure(operation, endpoint, error);
+async function handleWorkflowFailure(operation: string, endpoint: string, error: unknown, request?: WorkflowRequest) {
+  const context = request || workflowFeedback.begin(operation, endpoint, workflowRequestSummary());
+  workflowFeedback.fail(context, error);
   preserveCreativeDraft();
   if (error instanceof ShortDramaResponseError && error.loginExpired) {
     await handleLoginRequired();
     return;
   }
-  ElMessage.error(workflowFailureMessage.value);
+  if (context.projectId === currentProjectId.value && workflowFailureMessage.value) ElMessage.error(workflowFailureMessage.value);
 }
 
 function downloadWorkflowFeedback() {
@@ -416,12 +397,6 @@ function downloadWorkflowFeedback() {
   URL.revokeObjectURL(url);
 }
 
-function dismissWorkflowFeedback() {
-  workflowFailureMessage.value = '';
-  const last = workflowFailures.value[workflowFailures.value.length - 1];
-  if (!last) return;
-  try { sessionStorage.setItem(WORKFLOW_FAILURE_DISMISSED_KEY, last.recordedAt); } catch { /* Closing still works when storage is unavailable. */ }
-}
 
 const hasProject = computed(() => !!currentProjectId.value);
 const narrationAudio = computed(() => audios.value.find(audio => audio.audioType === 'narration'));
@@ -712,14 +687,18 @@ function showInitialScriptJob() {
 watch(() => scriptCreationJob.value?.state, async (state, before) => {
   if (state !== 'done' || before !== 'running') return;
   const projectId = scriptCreationJob.value?.projectId;
+  if (!projectId) return;
+  const feedbackRequest = workflowFeedback.begin('剧本回读', `/short-drama/${projectId}`, workflowRequestSummary(), projectId);
   sessionStorage.removeItem(CREATIVE_DRAFT_KEY);
   try {
     await refreshProjects();
     if (!viewMounted || !projectId || scriptCreationJob.value?.projectId !== projectId) return;
     if (!currentProjectId.value && activeStep.value === 'script') await loadDetail(projectId);
+    workflowFeedback.complete(feedbackRequest);
+    workflowFeedback.resolve('剧本创作', null);
     ElMessage.success('剧本草稿已生成，请审阅后再分析资产');
   } catch (error: unknown) {
-    if (viewMounted) await handleWorkflowFailure('剧本回读', `/short-drama/${projectId}`, error);
+    if (viewMounted) await handleWorkflowFailure('剧本回读', `/short-drama/${projectId}`, error, feedbackRequest);
   }
 });
 
@@ -730,14 +709,15 @@ async function handleCreateFromIdea() {
   if (!skillBindingState.value.ready) { ElMessage.warning(skillBindingState.value.reason); return; }
   const payload = { idea: buildIdeaPayload(), model: ideaForm.value.model, ...skillProjectPayload() };
   preserveCreativeDraft();
-  workflowFailureMessage.value = '';
+  const feedbackRequest = workflowFeedback.begin('剧本创作', '/short-drama/create-from-idea/stream', workflowRequestSummary(), null);
   activeStep.value = 'script'; activeStage.value = 'script'; maxReachedStep.value = 'script';
   const pending = scriptCreation.start(payload);
   try {
     if (currentProjectId.value) await router.push({ name: 'shortDrama', query: { fresh: '1' } });
     await pending;
+    workflowFeedback.complete(feedbackRequest);
   } catch (error: unknown) {
-    if (viewMounted) await handleWorkflowFailure('剧本创作', '/short-drama/create-from-idea/stream', error);
+    if (viewMounted) await handleWorkflowFailure('剧本创作', '/short-drama/create-from-idea/stream', error, feedbackRequest);
   }
 }
 
@@ -791,6 +771,7 @@ async function handleAnalyzeAssets() {
   if (regeneratingStoryboard.value) { ElMessage.warning('分镜正在生成，请完成后再分析资产'); return; }
   const projectId = String(currentProjectId.value), scriptId = scriptForm.value.id, model = ideaForm.value.model;
   const job = assetAnalysis.begin(projectId, scriptId);
+  const feedbackRequest = workflowFeedback.begin('资产分析', `/short-drama/${projectId}/analyze-assets/stream`, workflowRequestSummary(), projectId);
   activeStage.value = 'assets'; activeStep.value = 'assets'; maxReachedStep.value = 'assets';
   preserveCreativeDraft();
   try {
@@ -798,7 +779,8 @@ async function handleAnalyzeAssets() {
       await persistCurrentScript();
       if (scriptForm.value.id !== scriptId) throw new Error('剧本版本已改变，请重新确认');
     });
-  } catch (error: unknown) { await handleWorkflowFailure('资产分析', `/short-drama/${projectId}/analyze-assets/stream`, error); }
+    workflowFeedback.complete(feedbackRequest);
+  } catch (error: unknown) { await handleWorkflowFailure('资产分析', `/short-drama/${projectId}/analyze-assets/stream`, error, feedbackRequest); }
 }
 
 // ---- Step 04: Storyboard ----
@@ -811,6 +793,7 @@ async function handleGenerateStoryboard() {
   const projectId = String(currentProjectId.value), scriptId = scriptForm.value.id;
   const model = ideaForm.value.model;
   const job = storyboardPlanning.begin(projectId, scriptId);
+  const feedbackRequest = workflowFeedback.begin('分镜生成', `/short-drama/${projectId}/plan-storyboard/stream`, workflowRequestSummary(), projectId);
   activeStage.value = 'storyboard'; activeStep.value = 'storyboard'; maxReachedStep.value = 'storyboard';
   preserveCreativeDraft(); invalidateComposeView();
   try {
@@ -818,7 +801,8 @@ async function handleGenerateStoryboard() {
       await persistCurrentScript();
       if (scriptForm.value.id !== scriptId) throw new Error('剧本版本已改变，请重新确认');
     });
-  } catch (error: unknown) { await handleWorkflowFailure('分镜生成', `/short-drama/${projectId}/plan-storyboard/stream`, error); }
+    workflowFeedback.complete(feedbackRequest);
+  } catch (error: unknown) { await handleWorkflowFailure('分镜生成', `/short-drama/${projectId}/plan-storyboard/stream`, error, feedbackRequest); }
 }
 
 async function handleAddStoryboard(after?: ShortDramaStoryboard) {
@@ -1852,14 +1836,7 @@ onMounted(async () => {
   restoreCreativeDraft();
   if (regeneratingStoryboard.value) { activeStep.value = 'storyboard'; maxReachedStep.value = 'storyboard'; }
   if (!hasProject.value && scriptCreationJob.value?.state === 'running') { activeStep.value = 'script'; activeStage.value = 'script'; maxReachedStep.value = 'script'; }
-  try {
-    const records: unknown = JSON.parse(sessionStorage.getItem(WORKFLOW_FAILURE_KEY) || '[]');
-    if (Array.isArray(records)) workflowFailures.value = records.slice(-10) as WorkflowFailure[];
-    const last = workflowFailures.value[workflowFailures.value.length - 1];
-    if (last && sessionStorage.getItem(WORKFLOW_FAILURE_DISMISSED_KEY) !== last.recordedAt) {
-      workflowFailureMessage.value = `${last.operation}未完成：${last.message}`;
-    }
-  } catch { /* Ignore malformed diagnostics. */ }
+
 });
 
 onUnmounted(() => {

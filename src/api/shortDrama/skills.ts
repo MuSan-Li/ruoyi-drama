@@ -35,8 +35,7 @@ export interface DramaSkillCategory {
 }
 
 export async function listDramaSkillCategories(): Promise<DramaSkillCategory[]> {
-  const response = await get<SkillPayload<DramaSkillCategory[]>>('/short-drama/skills/categories').json();
-  const categories = skillData(response);
+  const categories = await readShortDramaResource<DramaSkillCategory[]>('/short-drama/skills/categories');
   if (!Array.isArray(categories)) throw new Error('短剧技能分类未返回，请检查后台服务');
   return categories;
 }
